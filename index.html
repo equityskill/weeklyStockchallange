@@ -175,7 +175,7 @@ th{color:#6b7280}
       </div>
     </div>
     <div class="right desktop-nav">
-  <span class="status">● Contest Open</span>
+ <span id="contestStatus" class="status">● Contest Open</span>
   <a class="nav-btn" href="results.html">Results</a>
   <a class="nav-btn" href="my-submission.html">My Submission</a>
 </div>
@@ -193,18 +193,18 @@ th{color:#6b7280}
   <div class="card">
     <h3>🏆 Weekly Skill Challenge</h3>
     <ul>
-      <li>Select <b>5</b> stocks from weekly list</li>
-      <li>Rank <b>Top 3</b> in exact order</li>
-      <li>Based on real market data</li>
+      <li>Choose <b>5</b> stocks from weekly list.</li>
+      <li>Rank <b>Top 3</b> stocks accurately (order atters).</li>
+      <li>Rankings are based on verified real-market performance data.</li>
     </ul>
-    <p>🏆 <b>Prize:</b> ₹15,000<br>🎟 <b>Entry:</b> Free</p>
+    <p>🏆 <b>Prize:</b> ₹25,000<br>🎟 <b>Entry:</b> Free</p>
   </div>
 
   <div class="card">
-    <h3>📊 Current Week Live Ranking</h3>
+    <h3 id="rankingTitle">📊 Current Week Live Ranking (15 Stocks)</h3>
     <table>
       <thead>
-        <tr><th>#</th><th>Stock</th><th>%</th></tr>
+        <tr><th>#</th><th>Stock</th><th id="pctHeader"></th></tr>
       </thead>
       <tbody id="liveRanking">
         <tr><td colspan="3">Loading…</td></tr>
@@ -220,7 +220,7 @@ th{color:#6b7280}
 <section id="stockPage" style="display:block">
 <div class="card">
 <div class="step">STEP 1 / 5</div>
-<h2>Select 5 Stocks</h2>
+<h2 id="selectTitle">Select 5 Stocks</h2>
 <div class="grid" id="stockList"></div>
 <p>Selected <b><span id="selectedCount">0</span>/5</b></p>
 <div class="error" id="stockError"></div>
@@ -363,7 +363,7 @@ I accept <span style="color:#2563eb;cursor:pointer" onclick="openTC()">Terms & C
 <script>
 /* ================= CONFIG ================= */
 const WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbxTayxt64i0XUhOzCEno_bymJDUu1XLgIOiE9oXZwcJBipcjYqUhke9LiTHAXcLdSrv/exec";
+"https://script.google.com/macros/s/AKfycbzL2jz2SvPv-J_mgr5B4yVlVRsQRyyQHjw7xlnMnVpeIDp0iPax_jvg73NjdI7kzK9y/exec";
 
 let STOCKS = [];
 let CURRENT_WEEK = "";
@@ -384,12 +384,36 @@ function show(id){
 }
 
 /* ================= LOAD INIT DATA ================= */
-function loadInit(){
+function loadInit() {
   fetch(WEB_APP_URL + "?action=init")
     .then(r => r.json())
     .then(d => {
+
+      // ✅ Week & stock data
       CURRENT_WEEK = d.week || "";
       STOCKS = d.stocks || [];
+
+      // ✅ Update "Select 5 Stocks – Week XXXX"
+      const title = document.getElementById("selectTitle");
+      if (title && CURRENT_WEEK) {
+        title.innerText = `Select 5 Stocks – Week ${CURRENT_WEEK}`;
+      }
+
+      // ✅ Contest status badge
+      const badge = document.getElementById("contestStatus");
+      if (badge) {
+        if (d.entryOpen === "YES") {
+          badge.innerText = "● Contest Open";
+          badge.style.background = "#dcfce7";
+          badge.style.color = "#166534";
+        } else {
+          badge.innerText = "● Contest Closed";
+          badge.style.background = "#fee2e2";
+          badge.style.color = "#991b1b";
+        }
+      }
+
+      // ✅ Render stocks list
       renderStocks();
     })
     .catch(() => {
@@ -499,26 +523,59 @@ function submitPrediction(){
 
 /* ================= LIVE RANKING ================= */
 function loadLiveRanking(){
-  fetch(WEB_APP_URL + "?action=daily")
+  fetch(WEB_APP_URL + "?action=homeRanking")
     .then(r => r.json())
     .then(d => {
       liveRanking.innerHTML = "";
-      d.ranking.forEach((r,i) => {
-        let icon =
-          i===0?"🥇":
-          i===1?"🥈":
-          i===2?"🥉":
-          (i<5?"🔥":"");
 
-        liveRanking.innerHTML +=
-        `<tr class="${i<5?"top5":""} ${i===5?"sep":""}">
-          <td>${i+1}</td>
-          <td>${icon} ${r.stock}</td>
-          <td>${r.pct}%</td>
-        </tr>`;
-      });
+
+      // 🔄 Change heading based on contest state
+if (d.mode === "LAST_CONTEST") {
+  document.getElementById("rankingTitle").innerText =
+    `📊 Last Contest Final Ranking – ${d.week} (15 Stocks)`;
+  document.getElementById("pctHeader").innerText =
+    "Final %";
+} else {
+  document.getElementById("rankingTitle").innerText =
+    `📊 Current Week Live Ranking – ${d.week} (15 Stocks)`;
+  document.getElementById("pctHeader").innerText =
+    "% Change";
+}
+
+
+ liveRanking.innerHTML = "";
+
+     // CASE 1: LIVE ranking (Mon–Fri)
+if (d.mode !== "LAST_CONTEST") {
+  d.ranking.forEach((r,i) => {
+    addRow(r.stock, r.pct, i);
+  });
+  return;
+}
+
+// CASE 2: LAST contest ranking (Weekend)
+d.ranking.forEach((r,i) => {
+  addRow(r.stock, r.pct, i);
+});
     });
 }
+
+function addRow(stock, pct, i){
+  let icon =
+    i===0?"🥇":
+    i===1?"🥈":
+    i===2?"🥉":
+    (i<5?"🔥":"");
+
+  liveRanking.innerHTML +=
+  `<tr class="${i<5?"top5":""} ${i===5?"sep":""}">
+    <td>${i+1}</td>
+    <td>${icon} ${stock}</td>
+   <td>${pct != null ? pct + "%" : "-"}</td>
+
+  </tr>`;
+}
+
 
 /* ================= TERMS MODAL ================= */
 function openTC(){
