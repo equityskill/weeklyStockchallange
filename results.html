@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EquitySkill – Weekly Results</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+}
+
+*{box-sizing:border-box}
+
+/* ===== PAGE BACKGROUND ===== */
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #e0e7ff, transparent),
+    radial-gradient(1200px 600px at 90% 10%, #dbeafe, transparent),
+    linear-gradient(180deg, #f8fafc, #eef2ff);
+  color:var(--text);
+}
+
+/* ===== HEADER ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:
+    linear-gradient(90deg, rgba(37,99,235,.08), rgba(99,102,241,.08)),
+    rgba(255,255,255,.7);
+  backdrop-filter: blur(14px);
+  border-bottom:1px solid var(--border);
+}
+
+.topbar-inner{
+  max-width:1100px;
+  margin:0 auto;
+  padding:14px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo-box{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:18px;
+  box-shadow:0 10px 25px rgba(37,99,235,.35);
+}
+
+.brand-name{
+  font-size:18px;
+  font-weight:800;
+}
+
+.brand-tagline{
+  font-size:11px;
+  color:#6b7280;
+}
+
+.right{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+
+.status{
+  font-size:12px;
+  font-weight:600;
+  padding:6px 12px;
+  border-radius:20px;
+  background:#eef2ff;
+  color:#3730a3;
+}
+
+.nav-btn{
+  text-decoration:none;
+  padding:8px 16px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  background:#e5e7eb;
+  color:#111827;
+}
+
+.nav-btn:hover{background:#dbeafe}
+
+/* ===== LAYOUT ===== */
+.container{
+  max-width:420px;
+  margin:30px auto 60px;
+  padding:20px;
+}
+@media(min-width:768px){
+  .container{max-width:900px;}
+}
+
+/* ===== CARDS ===== */
+.card{
+  background:rgba(255,255,255,.95);
+  border-radius:16px;
+  padding:22px;
+  box-shadow:0 14px 35px rgba(0,0,0,.08);
+  margin-bottom:22px;
+}
+
+h2,h3{margin:0 0 10px}
+p{margin:0 0 10px;color:var(--muted);font-size:14px}
+
+/* ===== BADGES ===== */
+.badge{
+  display:inline-block;
+  padding:8px 18px;
+  border-radius:20px;
+  font-size:14px;
+  font-weight:700;
+  margin-top:8px;
+}
+.badge.win{background:#dcfce7;color:#166534}
+.badge.nowin{background:#fee2e2;color:#991b1b}
+
+/* ===== LIST ===== */
+.list{list-style:none;padding:0;margin:0}
+.list li{
+  padding:12px 10px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+}
+
+/* ===== TABLE ===== */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th,td{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+th{color:var(--muted)}
+
+.rank{font-weight:700}
+
+/* ===== SELECT ===== */
+select{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+  margin-top:8px;
+}
+</style>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo-box">ES</div>
+      <div>
+        <div class="brand-name">EquitySkill</div>
+        <div class="brand-tagline">Weekly Results</div>
+      </div>
+    </div>
+    <div class="right">
+      <span class="status">● Results</span>
+      <a class="nav-btn" href="index.html">Home</a>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- CURRENT WEEK -->
+<div class="card">
+  <h2>📊 Weekly Results</h2>
+  <p id="weekText">Loading…</p>
+  <div id="winnerBox"></div>
+</div>
+
+<div class="card">
+  <h3>🔥 Top 5 Gainer Stocks</h3>
+  <ul class="list" id="top5List"></ul>
+</div>
+
+<div class="card">
+  <h3>🏅 Top 3 Ranking</h3>
+  <ul class="list">
+    <li><span class="rank">🥇</span> <span id="gold"></span></li>
+    <li><span class="rank">🥈</span> <span id="silver"></span></li>
+    <li><span class="rank">🥉</span> <span id="bronze"></span></li>
+  </ul>
+</div>
+
+<!-- PREVIOUS WEEKS -->
+<div class="card">
+  <h3>📅 View Previous Results</h3>
+  <select id="weekSelect" onchange="loadSelectedWeek()">
+    <option>Loading weeks…</option>
+  </select>
+
+  <table style="margin-top:15px">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Stock</th>
+        <th>Result</th>
+      </tr>
+    </thead>
+    <tbody id="stockTable">
+      <tr><td colspan="3">Select a week</td></tr>
+    </tbody>
+  </table>
+</div>
+
+</div>
+
+<script>
+/* ===== CONFIG ===== */
+const WEB_APP_URL =
+"https://script.google.com/macros/s/AKfycbxTayxt64i0XUhOzCEno_bymJDUu1XLgIOiE9oXZwcJBipcjYqUhke9LiTHAXcLdSrv/exec";
+
+window.onload = () => {
+  loadWeeklyResult();
+  loadPreviousWeeks();
+};
+
+/* ===== CURRENT WEEK ===== */
+function loadWeeklyResult(){
+  fetch(WEB_APP_URL + "?action=weeklyResult")
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById("weekText").innerText = "Week: " + d.week;
+
+      const box = document.getElementById("winnerBox");
+      if (!d.winnerCount) {
+        box.innerHTML = `<span class="badge nowin">❌ No winner this week</span>`;
+      } else {
+        box.innerHTML =
+          `<span class="badge win">🏆 Winners (${d.winnerCount}): ${d.winners.join(", ")}</span>`;
+      }
+
+      top5List.innerHTML = "";
+      d.top5.forEach((s,i)=>{
+        top5List.innerHTML += `<li><b>#${i+1}</b><span>${s}</span></li>`;
+      });
+
+      gold.innerText = d.top3[0];
+      silver.innerText = d.top3[1];
+      bronze.innerText = d.top3[2];
+    });
+}
+
+/* ===== PREVIOUS WEEKS ===== */
+function loadPreviousWeeks(){
+  fetch(WEB_APP_URL + "?action=previousResults")
+    .then(r => r.json())
+    .then(d => {
+      const sel = document.getElementById("weekSelect");
+      sel.innerHTML = "";
+      d.results.reverse().forEach(r=>{
+        const o=document.createElement("option");
+        o.value=r.week;
+        o.innerText=r.week;
+        sel.appendChild(o);
+      });
+      if(sel.value) loadSelectedWeek();
+    });
+}
+
+function loadSelectedWeek(){
+  const week = weekSelect.value;
+  fetch(WEB_APP_URL + "?action=weeklyResult&week=" + week)
+    .then(r=>r.json())
+    .then(d=>{
+      stockTable.innerHTML="";
+      d.top15.forEach((s,i)=>{
+        let badge="";
+        if(i===0) badge="🥇 Gold";
+        else if(i===1) badge="🥈 Silver";
+        else if(i===2) badge="🥉 Bronze";
+        else if(i<5) badge="🔥 Top 5";
+        stockTable.innerHTML+=
+          `<tr><td>${i+1}</td><td>${s}</td><td>${badge}</td></tr>`;
+      });
+    });
+}
+</script>
+
+</body>
+</html>

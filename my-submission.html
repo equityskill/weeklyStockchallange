@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EquitySkill – My Submission</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:#f5f7fb;
+  color:var(--text);
+}
+
+/* ===== HEADER ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-inner{
+  max-width:900px;
+  margin:auto;
+  padding:14px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.brand{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.logo-box{
+  width:44px;height:44px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:#fff;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.brand-name{font-weight:800}
+.brand-tagline{font-size:11px;color:#6b7280}
+.right{display:flex;gap:12px;align-items:center}
+.nav-btn{
+  background:#2563eb;
+  color:#fff;
+  padding:8px 16px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  text-decoration:none;
+}
+.nav-btn.secondary{
+  background:#e5e7eb;
+  color:#111;
+}
+
+/* ===== PAGE ===== */
+.container{
+  max-width:420px;
+  margin:30px auto;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:22px;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+h2{margin-top:0}
+input,select,button{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+button{
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  font-weight:600;
+  cursor:pointer;
+}
+button.secondary{
+  background:#e5e7eb;
+  color:#111;
+}
+.error{
+  color:#dc2626;
+  font-size:13px;
+  margin-bottom:10px;
+}
+.box{
+  margin-top:15px;
+  font-size:14px;
+}
+.label{
+  font-weight:600;
+  margin-top:10px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo-box">ES</div>
+      <div>
+        <div class="brand-name">EquitySkill</div>
+        <div class="brand-tagline">My Submissions</div>
+      </div>
+    </div>
+    <div class="right">
+      <a class="nav-btn secondary" href="index.html">Home</a>
+    </div>
+  </div>
+</header>
+
+<!-- CONTENT -->
+<div class="container">
+<div class="card">
+
+<h2>📄 My Submission</h2>
+
+<div id="formBox">
+  <input id="email" placeholder="Email">
+  <input id="phone" placeholder="Phone number">
+  <div class="error" id="err"></div>
+  <button onclick="loadSubmission()">View Submission</button>
+</div>
+
+<div id="resultBox" style="display:none">
+  <p class="label">Week</p>
+  <select id="weekSelect" onchange="changeWeek()"></select>
+
+  <div class="box">
+    <p class="label">Selected 5 Stocks</p>
+    <div id="stocks"></div>
+  </div>
+
+  <div class="box">
+    <p class="label">Top 3 Ranking</p>
+    <div id="ranking"></div>
+  </div>
+
+  <button class="secondary" style="margin-top:15px" onclick="resetView()">
+    Check Another
+  </button>
+</div>
+
+</div>
+</div>
+
+<script>
+const WEB_APP_URL =
+"https://script.google.com/macros/s/AKfycbxTayxt64i0XUhOzCEno_bymJDUu1XLgIOiE9oXZwcJBipcjYqUhke9LiTHAXcLdSrv/exec";
+
+let USER_EMAIL="", USER_PHONE="";
+
+function loadSubmission(week=""){
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+
+  if(!email || !phone){
+    err.innerText="Enter email and phone";
+    return;
+  }
+
+  USER_EMAIL=email;
+  USER_PHONE=phone;
+
+  fetch(
+    `${WEB_APP_URL}?action=mySubmission&email=${encodeURIComponent(email)}&phone=${phone}&week=${week}`
+  )
+  .then(r=>r.json())
+  .then(d=>{
+    if(d.status!=="FOUND"){
+      err.innerText="No submission found";
+      return;
+    }
+
+    formBox.style.display="none";
+    resultBox.style.display="block";
+
+    weekSelect.innerHTML="";
+    d.weeks.forEach(w=>{
+      weekSelect.innerHTML+=
+        `<option ${w===d.currentWeek?"selected":""}>${w}</option>`;
+    });
+
+    stocks.innerHTML = d.selected5.map(s=>"• "+s).join("<br>");
+    ranking.innerHTML =
+      `🥇 ${d.top3.gold}<br>🥈 ${d.top3.silver}<br>🥉 ${d.top3.bronze}`;
+  });
+}
+
+function changeWeek(){
+  loadSubmission(weekSelect.value);
+}
+
+function resetView(){
+  resultBox.style.display="none";
+  formBox.style.display="block";
+  err.innerText="";
+}
+</script>
+
+</body>
+</html>
