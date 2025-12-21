@@ -203,14 +203,6 @@ select{
   <ul class="list" id="top5List"></ul>
 </div>
 
-<div class="card">
-  <h3>🏅 Top 3 Ranking</h3>
-  <ul class="list">
-    <li><span class="rank">🥇</span> <span id="gold"></span></li>
-    <li><span class="rank">🥈</span> <span id="silver"></span></li>
-    <li><span class="rank">🥉</span> <span id="bronze"></span></li>
-  </ul>
-</div>
 
 <!-- PREVIOUS WEEKS -->
 <div class="card">
@@ -238,7 +230,7 @@ select{
 <script>
 /* ===== CONFIG ===== */
 const WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbxTayxt64i0XUhOzCEno_bymJDUu1XLgIOiE9oXZwcJBipcjYqUhke9LiTHAXcLdSrv/exec";
+"https://script.google.com/macros/s/AKfycbzL2jz2SvPv-J_mgr5B4yVlVRsQRyyQHjw7xlnMnVpeIDp0iPax_jvg73NjdI7kzK9y/exec";
 
 window.onload = () => {
   loadWeeklyResult();
@@ -250,6 +242,7 @@ function loadWeeklyResult(){
   fetch(WEB_APP_URL + "?action=weeklyResult")
     .then(r => r.json())
     .then(d => {
+
       document.getElementById("weekText").innerText = "Week: " + d.week;
 
       const box = document.getElementById("winnerBox");
@@ -260,16 +253,32 @@ function loadWeeklyResult(){
           `<span class="badge win">🏆 Winners (${d.winnerCount}): ${d.winners.join(", ")}</span>`;
       }
 
+      // ✅ CLEAR ONCE
       top5List.innerHTML = "";
-      d.top5.forEach((s,i)=>{
-        top5List.innerHTML += `<li><b>#${i+1}</b><span>${s}</span></li>`;
+
+      // ✅ SINGLE LOOP ONLY
+      d.top5.forEach((s, i) => {
+        let badge = "";
+        if (i === 0) badge = "🥇 Gold";
+        else if (i === 1) badge = "🥈 Silver";
+        else if (i === 2) badge = "🥉 Bronze";
+        else badge = "🔥 Top 5";
+
+        const stockName = typeof s === "string" ? s : s.stock;
+        const pctText = s.pct !== undefined ? ` (${s.pct}%)` : "";
+
+        top5List.innerHTML += `
+          <li>
+            <b>#${i + 1}</b>
+            <span>${stockName}${pctText}</span>
+            <span style="font-weight:600">${badge}</span>
+          </li>
+        `;
       });
 
-      gold.innerText = d.top3[0];
-      silver.innerText = d.top3[1];
-      bronze.innerText = d.top3[2];
     });
 }
+
 
 /* ===== PREVIOUS WEEKS ===== */
 function loadPreviousWeeks(){
@@ -295,14 +304,23 @@ function loadSelectedWeek(){
     .then(d=>{
       stockTable.innerHTML="";
       d.top15.forEach((s,i)=>{
-        let badge="";
-        if(i===0) badge="🥇 Gold";
-        else if(i===1) badge="🥈 Silver";
-        else if(i===2) badge="🥉 Bronze";
-        else if(i<5) badge="🔥 Top 5";
-        stockTable.innerHTML+=
-          `<tr><td>${i+1}</td><td>${s}</td><td>${badge}</td></tr>`;
-      });
+  let badge="";
+  if(i===0) badge="🥇 Gold";
+  else if(i===1) badge="🥈 Silver";
+  else if(i===2) badge="🥉 Bronze";
+  else if(i<5) badge="🔥 Top 5";
+
+  const stockName = typeof s === "string" ? s : s.stock;
+  const pctText = s.pct !== undefined ? ` (${s.pct}%)` : "";
+
+  stockTable.innerHTML +=
+    `<tr>
+      <td>${i+1}</td>
+      <td>${stockName}${pctText}</td>
+      <td>${badge}</td>
+    </tr>`;
+});
+
     });
 }
 </script>
