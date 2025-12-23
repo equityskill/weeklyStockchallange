@@ -169,7 +169,16 @@ th{color:#6b7280}
   .rules-link:hover{
     opacity:.8;
   }
+
+  .nav-primary{
+  background:#2563eb;
+  color:#fff;
+}
+
 </style>
+
+<script src="config.js"></script>
+
 </head>
 
 <body>
@@ -185,8 +194,10 @@ th{color:#6b7280}
     </div>
     <div class="right desktop-nav">
  <span id="contestStatus" class="status">● Contest Open</span>
-  <a class="nav-btn" href="results.html">Results</a>
-  <a class="nav-btn" href="my-submission.html">My Submission</a>
+<a class="nav-btn" href="results.html">Results</a>
+<a class="nav-btn nav-primary" href="dashboard.html">My Dashboard</a>
+
+
 </div>
 
 <!-- Mobile Menu Button -->
@@ -264,15 +275,16 @@ th{color:#6b7280}
 <h2>Confirm Prediction</h2>
 <p id="confirmStocks"></p>
 <p id="confirmRank"></p>
-<button onclick="show('registerPage')">Continue</button>
+<button onclick="handleAfterRanking()">Continue</button>
 </div>
 </section>
 
 <!-- STEP 4 -->
-<section id="registerPage">
+<!-- <section id="registerPage">
 <div class="card">
 <div class="step">STEP 4 / 5</div>
 <h2>Your Details</h2>
+<div id="userInfo" style="font-size:13px;color:#16a34a;margin-bottom:8px;"></div>
 <input id="regName" placeholder="Name">
 <input id="regEmail" placeholder="Email">
 <input id="regPhone" placeholder="Phone">
@@ -283,13 +295,15 @@ I accept <span style="color:#2563eb;cursor:pointer" onclick="openTC()">Terms & C
 <div class="error" id="regError"></div>
 <button onclick="submitPrediction()">Submit</button>
 </div>
-</section>
+</section>  -->
 
 <!-- STEP 5 -->
 <section id="successPage">
 <div class="card">
 <h2>✅ Submitted</h2>
-<p>Results declared after market close.</p>
+<p>Results will be declared on <b>Friday at 8:00 PM</b>.<br>
+A submission confirmation email has been sent to your <b>registered email address</b>.
+</p>
 <button class="secondary" onclick="location.reload()">Home</button>
 </div>
 </section>
@@ -389,8 +403,23 @@ technical issues, market anomalies, or unforeseen circumstances.<br><br>
 
 <script>
 /* ================= CONFIG ================= */
-const WEB_APP_URL =
-"https://script.google.com/macros/s/AKfycbzL2jz2SvPv-J_mgr5B4yVlVRsQRyyQHjw7xlnMnVpeIDp0iPax_jvg73NjdI7kzK9y/exec";
+const WEB_APP_URL = CONFIG.WEB_APP_URL;
+let user = null;
+
+
+function handleAfterRanking(){
+  user = JSON.parse(localStorage.getItem("user"));
+
+  if(!user){
+    // ❌ Guest → login required
+    alert("Please login or signup to continue");
+    location.href = "login.html";
+    return;
+  }
+
+  // ✅ Logged-in user → directly submit
+  submitPrediction();
+}
 
 let STOCKS = [];
 let CURRENT_WEEK = "";
@@ -402,6 +431,7 @@ window.onload = () => {
   loadInit();
   loadLiveRanking();
 };
+
 
 /* ================= PAGE SWITCH ================= */
 function show(id){
@@ -519,27 +549,22 @@ function goToConfirm(){
 
 /* ================= SUBMIT ================= */
 function submitPrediction(){
-  if(
-    !regName.value.trim() ||
-    !regEmail.value.trim() ||
-    !regPhone.value.trim() ||
-    !tcCheck.checked
-  ){
-    regError.innerText = "Fill details & accept Terms & Conditions";
+  const user = JSON.parse(localStorage.getItem("user"));
+  if(!user){
+    alert("Please login to submit");
     return;
   }
-  regError.innerText = "";
 
   fetch(WEB_APP_URL, {
     method: "POST",
     mode: "no-cors",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      action: "submit",
       week: CURRENT_WEEK,
-      name: regName.value.trim(),
-      email: regEmail.value.trim(),
-      phone: regPhone.value.trim(),
+      username: user.username,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
       selected5: selectedStocks,
       top3: topRank
     })
@@ -547,6 +572,13 @@ function submitPrediction(){
 
   show("successPage");
 }
+
+
+
+
+
+
+
 
 /* ================= LIVE RANKING ================= */
 function loadLiveRanking(){
