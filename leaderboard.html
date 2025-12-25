@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EquitySkill – Weekly Leaderboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#1f2937;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+.container{
+  max-width:720px;
+  margin:30px auto;
+  padding:16px;
+}
+
+/* HEADER */
+.header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:14px;
+}
+.brand{
+  font-size:22px;
+  font-weight:800;
+  color:var(--primary);
+}
+.header a{
+  text-decoration:none;
+  font-weight:600;
+  color:var(--primary);
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 14px 40px rgba(0,0,0,.08);
+  margin-bottom:16px;
+}
+
+/* SUMMARY */
+.summary{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+}
+.summary div{
+  flex:1;
+  background:#f1f5f9;
+  border-radius:14px;
+  padding:14px;
+  text-align:center;
+}
+.summary h3{
+  margin:0;
+  font-size:22px;
+}
+.summary p{
+  margin:4px 0 0;
+  font-size:12px;
+  color:#555;
+}
+
+select{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid var(--border);
+  margin-bottom:14px;
+  font-weight:600;
+}
+
+/* TABLE */
+.table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+.table th{
+  background:#f1f5f9;
+  font-size:13px;
+  padding:12px;
+  text-align:left;
+}
+
+.table td{
+  padding:14px 12px;
+  border-bottom:1px solid var(--border);
+}
+
+/* ROW */
+.row{
+  cursor:pointer;
+  position:relative;
+  transition:background .15s, transform .15s;
+}
+.row:hover{ background:#f8fafc }
+.row:active{ transform:scale(.98) }
+
+/* RIPPLE */
+.row::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(37,99,235,.08);
+  opacity:0;
+  transition:.3s;
+}
+.row:active::after{ opacity:1 }
+
+/* RANK */
+.rank{
+  font-weight:800;
+  width:36px;
+}
+
+/* SCORE */
+.score{ font-weight:700 }
+
+/* ARROW */
+.arrow{
+  text-align:right;
+  font-weight:600;
+  color:#6b7280;
+}
+
+/* PODIUM */
+.gold{ color:#d97706 }
+.silver{ color:#6b7280 }
+.bronze{ color:#b45309 }
+
+/* LOGGED USER */
+.me{
+  background:#ecfeff !important;
+  border-left:4px solid var(--primary);
+}
+
+.you-badge{
+  margin-left:6px;
+  padding:2px 8px;
+  font-size:11px;
+  font-weight:700;
+  border-radius:999px;
+  background:var(--primary);
+  color:#fff;
+}
+
+/* MOBILE */
+@media(max-width:600px){
+  .arrow{ display:none }
+  .summary{ flex-direction:column }
+}
+</style>
+
+<script src="config.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="brand">🏆 Weekly Leaderboard</div>
+    <a href="dashboard.html">Dashboard</a>
+  </div>
+
+  <!-- USER RANK SUMMARY -->
+  <div class="card">
+    <div class="summary">
+      <div>
+        <h3 id="myRank">—</h3>
+        <p>Your Rank</p>
+      </div>
+      <div>
+        <h3 id="myScore">—</h3>
+        <p>Your Score</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="card">
+
+    <select id="weekSelect" onchange="loadLeaderboard()"></select>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Score</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="leaderboardBody"></tbody>
+    </table>
+
+  </div>
+
+</div>
+
+<script>
+const API = CONFIG.WEB_APP_URL;
+
+/* LOGIN CHECK */
+const user = JSON.parse(localStorage.getItem("user"));
+if(!user){
+  location.href = "login.html";
+}
+
+/* LOAD WEEKS */
+fetch(`${API}?action=previousResults`)
+  .then(r=>r.json())
+  .then(d=>{
+    const sel=document.getElementById("weekSelect");
+    d.results.forEach(w=>{
+      sel.innerHTML += `<option>${w.week}</option>`;
+    });
+    loadLeaderboard();
+  });
+
+function loadLeaderboard(){
+  const week=document.getElementById("weekSelect").value;
+
+  fetch(`${API}?action=weeklyLeaderboard&week=${week}`)
+    .then(r=>r.json())
+    .then(d=>{
+      const body=document.getElementById("leaderboardBody");
+      body.innerHTML="";
+
+      let myRank="—", myScore="—";
+
+      d.leaderboard.forEach((u,i)=>{
+
+        if(u.username === user.username){
+          myRank = `#${i+1}`;
+          myScore = u.score;
+        }
+
+        let cls="", badge="";
+        if(i===0){ cls="gold"; badge="🥇"; }
+        if(i===1){ cls="silver"; badge="🥈"; }
+        if(i===2){ cls="bronze"; badge="🥉"; }
+
+        const isMe = user.username === u.username;
+        const meClass = isMe ? "me" : "";
+
+        body.innerHTML += `
+<tr class="row ${cls} ${meClass}" onclick="openProfile('${u.username}')">
+  <td class="rank">${badge || (i+1)}</td>
+  <td>
+    <b>@${u.username}</b>
+    ${isMe ? `<span class="you-badge">YOU</span>` : ``}
+  </td>
+  <td class="score">${u.score}</td>
+  <td class="arrow">View Profile →</td>
+</tr>`;
+      });
+
+      document.getElementById("myRank").innerText = myRank || "Not ranked";
+      document.getElementById("myScore").innerText = myScore || "—";
+    });
+}
+
+function openProfile(username){
+  location.href = `profile.html?user=${username}`;
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EquitySkill – Signup</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:#f5f7fb;
+}
+.container{
+  max-width:420px;
+  margin:70px auto;
+  background:#fff;
+  padding:28px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:14px;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#16a34a;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+button:disabled{
+  background:#9ca3af;
+  cursor:not-allowed;
+}
+.error{
+  color:#dc2626;
+  text-align:center;
+  margin-top:8px;
+}
+.success{
+  color:#16a34a;
+  text-align:center;
+  margin-top:8px;
+}
+.link{
+  text-align:center;
+  margin-top:14px;
+}
+.link a{
+  color:#2563eb;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Create Account</h2>
+
+  <input id="name" placeholder="Full Name">
+  <input id="username" placeholder="Username">
+  <input id="email" placeholder="Email">
+  <input id="phone" placeholder="Phone">
+
+  <button id="signupBtn" onclick="signup()">Signup</button>
+
+  <div class="error" id="error"></div>
+  <div class="success" id="success"></div>
+
+  <div class="link">
+    Already have an account? <a href="login.html">Login</a>
+  </div>
+</div>
+
+<!-- ✅ CONFIG MUST LOAD FIRST -->
+<script src="config.js"></script>
+
+<script>
+const API = CONFIG.WEB_APP_URL;
+
+// Already logged-in guard
+if(localStorage.getItem("user")){
+  location.href = "dashboard.html";
+}
+
+let usernameAvailable = false;
+
+// Username availability check (on blur)
+document.getElementById("username").addEventListener("blur", checkUsername);
+
+function checkUsername(){
+  const username = document.getElementById("username").value.trim();
+  const error = document.getElementById("error");
+  const success = document.getElementById("success");
+
+  error.innerText = "";
+  success.innerText = "";
+  usernameAvailable = false;
+
+  if(!username) return;
+
+  fetch(`${API}?action=checkUsername&username=${encodeURIComponent(username)}`)
+    .then(res => res.json())
+    .then(d => {
+      if(d.available){
+        success.innerText = "Username available";
+        usernameAvailable = true;
+      } else {
+        error.innerText = "Username already taken";
+      }
+    })
+    .catch(() => {
+      error.innerText = "Unable to check username";
+    });
+}
+
+function signup(){
+  const name = document.getElementById("name").value.trim();
+  const username = document.getElementById("username").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const error = document.getElementById("error");
+  const success = document.getElementById("success");
+  const btn = document.getElementById("signupBtn");
+
+  error.innerText = "";
+  success.innerText = "";
+
+  if(!name || !username || !phone){
+    error.innerText = "Please fill all required fields";
+    return;
+  }
+
+  if(!usernameAvailable){
+    error.innerText = "Please choose an available username";
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerText = "Creating account...";
+
+  fetch(`${API}?action=signupUser&name=${encodeURIComponent(name)}&username=${encodeURIComponent(username)}&email=${encodeURIComponent(email)}&phone=${encodeURIComponent(phone)}`)
+    .then(res => res.json())
+    .then(d => {
+      if(d.success){
+        // Standardized session object
+        localStorage.setItem("user", JSON.stringify({
+          username: username,
+          name: name,
+          email: email,
+          phone: phone
+        }));
+
+        success.innerText = "Account created successfully";
+        setTimeout(() => location.href = "dashboard.html", 800);
+      } else {
+        error.innerText = d.message || "Signup failed";
+        btn.disabled = false;
+        btn.innerText = "Signup";
+      }
+    })
+    .catch(() => {
+      error.innerText = "Server error. Try again.";
+      btn.disabled = false;
+      btn.innerText = "Signup";
+    });
+}
+</script>
+
+</body>
+</html>

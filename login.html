@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EquitySkill – Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:#f5f7fb;
+}
+.container{
+  max-width:420px;
+  margin:80px auto;
+  background:#fff;
+  padding:28px;
+  border-radius:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+h2{
+  text-align:center;
+  margin-bottom:20px;
+}
+input{
+  width:100%;
+  padding:12px;
+  margin-bottom:14px;
+  border-radius:10px;
+  border:1px solid #ddd;
+}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#2563eb;
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+.error{
+  color:#dc2626;
+  text-align:center;
+  margin-top:10px;
+}
+.link{
+  text-align:center;
+  margin-top:14px;
+}
+.link a{
+  color:#2563eb;
+  text-decoration:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Login</h2>
+
+  <input id="username" placeholder="Username / Email">
+  <input id="phone" placeholder="Phone">
+  <button onclick="login()">Login</button>
+
+  <div class="error" id="error"></div>
+
+  <div class="link">
+    New user? <a href="signup.html">Signup</a>
+  </div>
+</div>
+
+<!-- ✅ CONFIG MUST LOAD FIRST -->
+<script src="config.js"></script>
+
+<script>
+const API = CONFIG.WEB_APP_URL;
+
+// Already logged-in guard
+// const existingUser = localStorage.getItem("user");
+if(existingUser){
+  window.location.replace("index.html");
+
+}
+
+function login(){
+  const username = document.getElementById("username").value.trim();
+  const phone = document.getElementById("phone").value.trim();
+  const error = document.getElementById("error");
+
+  error.innerText = "";
+
+  if(!username || !phone){
+    error.innerText = "Please enter all details";
+    return;
+  }
+
+  fetch(`${API}?action=loginUser&username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}`)
+    .then(res => res.json())
+    .then(d => {
+      if(d.success){
+        // Standardized session object
+        localStorage.setItem("user", JSON.stringify({
+          username: d.user.username,
+          name: d.user.name || d.user.username,
+          email: d.user.email || "",
+          phone: d.user.phone || phone
+        }));
+
+        location.href = "dashboard.html";
+      } else {
+        error.innerText = d.message || "Invalid login";
+      }
+    })
+    .catch(() => {
+      error.innerText = "Server error. Try again.";
+    });
+}
+</script>
+
+</body>
+</html>

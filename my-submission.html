@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EquitySkill – My Submission</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#2563eb;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --text:#1f2937;
+  --muted:#6b7280;
+  --border:#e5e7eb;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+}
+
+/* ===== HEADER ===== */
+.topbar{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(255,255,255,.9);
+  backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--border);
+}
+.topbar-inner{
+  max-width:900px;
+  margin:auto;
+  padding:14px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+.brand{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+.logo-box{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:#fff;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.brand-name{font-weight:800}
+.brand-tagline{font-size:11px;color:#6b7280}
+.nav-btn{
+  background:#e5e7eb;
+  color:#111;
+  padding:8px 16px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:600;
+  text-decoration:none;
+}
+
+/* ===== PAGE ===== */
+.container{
+  max-width:420px;
+  margin:40px auto;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:22px;
+  box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+h2,h3{margin-top:0}
+
+select{
+  width:100%;
+  padding:12px;
+  margin-bottom:12px;
+  border-radius:10px;
+  border:1px solid var(--border);
+}
+
+.label{
+  font-weight:600;
+  margin-top:14px;
+}
+.box{
+  margin-top:10px;
+  font-size:14px;
+}
+.error{
+  color:#dc2626;
+  font-size:13px;
+  margin-top:10px;
+}
+
+/* ===== SCORE BREAKDOWN ===== */
+.break-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 12px;
+  border-radius:10px;
+  background:#f8fafc;
+  margin-top:8px;
+  font-size:14px;
+}
+
+.badge{
+  min-width:40px;
+  text-align:center;
+  padding:4px 10px;
+  border-radius:999px;
+  background:#2563eb;
+  color:#fff;
+  font-weight:700;
+}
+
+.progress{
+  width:100%;
+  height:8px;
+  background:#e5e7eb;
+  border-radius:999px;
+  margin-top:6px;
+  overflow:hidden;
+}
+
+.progress div{
+  height:100%;
+  width:0%;
+  background:#22c55e;
+  border-radius:999px;
+  transition:width .4s ease;
+}
+
+</style>
+
+<script src="config.js"></script>
+</head>
+
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="logo-box">ES</div>
+      <div>
+        <div class="brand-name">EquitySkill</div>
+        <div class="brand-tagline">My Submission</div>
+      </div>
+    </div>
+    <a class="nav-btn" href="dashboard.html">Dashboard</a>
+  </div>
+</header>
+
+<div class="container">
+  <div class="card">
+
+    <h2>📄 My Submission</h2>
+
+    <!-- SCORE SUMMARY -->
+    <div id="scoreBox" style="display:none;">
+      <h3>🏆 Your Score</h3>
+      <p><b>Total Games:</b> <span id="totalGames">0</span></p>
+      <p><b>Latest Score:</b> <span id="latestScore">0</span></p>
+      <p><b>Best Score:</b> <span id="bestScore">0</span></p>
+
+      <div style="margin-top:10px;">
+        <b>Score History</b>
+        <ul id="scoreHistory"></ul>
+      </div>
+    </div>
+
+    <!-- SCORE BREAKDOWN -->
+    <div id="breakdownBox" style="display:none; margin-top:20px;">
+  <h3>📊 Score Breakdown</h3>
+
+  <div class="break-item">
+    🥇 Gold
+    <span id="bdGold" class="badge">0</span>
+  </div>
+  <div class="progress"><div id="barGold"></div></div>
+
+  <div class="break-item">
+    🥈 Silver
+    <span id="bdSilver" class="badge">0</span>
+  </div>
+  <div class="progress"><div id="barSilver"></div></div>
+
+  <div class="break-item">
+    🥉 Bronze
+    <span id="bdBronze" class="badge">0</span>
+  </div>
+  <div class="progress"><div id="barBronze"></div></div>
+
+  <div class="break-item">
+    🔥 Rank 4
+    <span id="bdRank4" class="badge">0</span>
+  </div>
+  <div class="progress"><div id="barRank4"></div></div>
+
+  <div class="break-item">
+    🔥 Rank 5
+    <span id="bdRank5" class="badge">0</span>
+  </div>
+  <div class="progress"><div id="barRank5"></div></div>
+</div>
+
+
+    <!-- SUBMISSION DETAILS -->
+    <div id="resultBox" style="display:none; margin-top:20px;">
+      <div class="label">Week</div>
+      <select id="weekSelect" onchange="changeWeek()"></select>
+
+      <div class="box">
+        <div class="label">Selected 5 Stocks</div>
+        <div id="stocks"></div>
+      </div>
+
+      <div class="box">
+        <div class="label">Top 3 Ranking</div>
+        <div id="ranking"></div>
+      </div>
+    </div>
+
+    <div class="error" id="err"></div>
+
+  </div>
+</div>
+
+<script>
+const API = CONFIG.WEB_APP_URL;
+
+const user = JSON.parse(localStorage.getItem("user"));
+if(!user){
+  location.href = "login.html";
+}
+
+window.onload = () => {
+  loadSubmission();
+  loadMyScores();
+};
+
+function loadSubmission(week=""){
+  fetch(`${API}?action=mySubmission&username=${encodeURIComponent(user.username)}&week=${week}`)
+    .then(r => r.json())
+    .then(d => {
+
+      if(d.status !== "FOUND"){
+        err.innerText = "No submission found.";
+        return;
+      }
+
+      err.innerText = "";
+      resultBox.style.display = "block";
+
+      weekSelect.innerHTML = "";
+      d.weeks.forEach(w=>{
+        weekSelect.innerHTML += `<option ${w===d.currentWeek?"selected":""}>${w}</option>`;
+      });
+
+      stocks.innerHTML = d.selected5.map(s => "• " + s).join("<br>");
+      ranking.innerHTML =
+        `🥇 ${d.top3.gold}<br>
+         🥈 ${d.top3.silver}<br>
+         🥉 ${d.top3.bronze}`;
+    });
+}
+
+function loadMyScores(){
+  fetch(`${API}?action=myScores&username=${encodeURIComponent(user.username)}`)
+    .then(r => r.json())
+    .then(d => {
+
+      if(d.status !== "FOUND") return;
+
+      scoreBox.style.display = "block";
+      breakdownBox.style.display = "block";
+
+      totalGames.innerText = d.totalGames;
+      latestScore.innerText = d.latestScore;
+      bestScore.innerText = d.bestScore;
+
+      scoreHistory.innerHTML = "";
+     scoreHistory.innerHTML = "";
+
+d.scores.forEach((s, i) => {
+  const li = document.createElement("li");
+  li.style.cursor = "pointer";
+  li.innerHTML = `<b>${s.week}</b> → ${s.score} pts`;
+
+  li.onclick = () => updateBreakdown(s.breakdown);
+
+  scoreHistory.appendChild(li);
+
+  // latest week default
+  if(i === 0){
+    updateBreakdown(s.breakdown);
+  }
+});
+
+
+      const latest = d.scores[0].breakdown;
+      bdGold.innerText = latest.gold || 0;
+      bdSilver.innerText = latest.silver || 0;
+      bdBronze.innerText = latest.bronze || 0;
+      bdRank4.innerText = latest.rank4 || 0;
+      bdRank5.innerText = latest.rank5 || 0;
+    });
+}
+
+function changeWeek(){
+  loadSubmission(weekSelect.value);
+}
+
+function updateBreakdown(b){
+
+  bdGold.innerText = b.gold || 0;
+  bdSilver.innerText = b.silver || 0;
+  bdBronze.innerText = b.bronze || 0;
+  bdRank4.innerText = b.rank4 || 0;
+  bdRank5.innerText = b.rank5 || 0;
+
+  barGold.style.width   = ((b.gold||0)/20)*100 + "%";
+  barSilver.style.width = ((b.silver||0)/15)*100 + "%";
+  barBronze.style.width = ((b.bronze||0)/10)*100 + "%";
+  barRank4.style.width  = ((b.rank4||0)/5)*100 + "%";
+  barRank5.style.width  = ((b.rank5||0)/5)*100 + "%";
+}
+
+</script>
+
+</body>
+</html>

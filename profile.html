@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>User Profile – EquitySkill</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:Inter,Arial;
+  background:#f5f7fb;
+}
+.container{
+  max-width:600px;
+  margin:30px auto;
+  padding:20px;
+}
+.card{
+  background:#fff;
+  border-radius:16px;
+  padding:22px;
+  box-shadow:0 10px 30px rgba(0,0,0,.08);
+}
+h2{margin-top:0}
+.stat{
+  display:flex;
+  justify-content:space-between;
+  padding:10px 0;
+  border-bottom:1px solid #eee;
+}
+.stat:last-child{border:none}
+.list li{
+  margin-bottom:6px;
+}
+.header{
+  display:flex;
+  justify-content:space-between;
+  margin-bottom:16px;
+}
+
+.nav-btn{
+  padding:8px 14px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  background:#e5e7eb;
+}
+
+.nav-btn.primary{
+  background:#2563eb;
+  color:#fff;
+}
+
+</style>
+
+<script src="config.js"></script>
+</head>
+
+<body>
+
+<div class="container">
+    <div class="header">
+  <button class="nav-btn" onclick="goBack()">⬅ Back</button>
+  <button class="nav-btn primary" onclick="goHome()">🏠 Dashboard</button>
+</div>
+
+  <div class="card">
+
+    <h2 id="username">User</h2>
+
+    <div class="stat"><b>Total Games</b><span id="totalGames">0</span></div>
+    <div class="stat"><b>Best Score</b><span id="bestScore">0</span></div>
+    <div class="stat"><b>Average Score</b><span id="avgScore">0</span></div>
+
+    <h3 style="margin-top:20px;">Score History</h3>
+    <ul id="history" class="list"></ul>
+
+  </div>
+</div>
+
+<script>
+const API = CONFIG.WEB_APP_URL;
+
+// read username from URL
+const params = new URLSearchParams(window.location.search);
+const username = params.get("user");
+
+if(!username){
+  alert("Invalid user");
+  location.href = "leaderboard.html";
+}
+
+document.getElementById("username").innerText = "@" + username;
+
+fetch(`${API}?action=userProfile&username=${username}`)
+  .then(r => r.json())
+  .then(d => {
+
+    document.getElementById("totalGames").innerText = d.totalGames;
+    document.getElementById("bestScore").innerText = d.bestScore;
+    document.getElementById("avgScore").innerText = d.avgScore;
+
+    const list = document.getElementById("history");
+    list.innerHTML = "";
+
+    d.scores.forEach(s=>{
+      list.innerHTML += `<li>${s.week} → ${s.score} pts</li>`;
+    });
+  });
+  function goBack(){
+  history.back(); // previous page (leaderboard)
+}
+
+function goHome(){
+  location.href = "dashboard.html";
+}
+
+</script>
+
+</body>
+</html>
