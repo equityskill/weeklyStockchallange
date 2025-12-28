@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>EquitySkill – Play Challenge</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#2563eb;
+  --border:#e5e7eb;
+}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Inter,Arial,sans-serif;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #e0e7ff, transparent),
+    radial-gradient(1200px 600px at 90% 10%, #dbeafe, transparent),
+    linear-gradient(180deg, #f8fafc, #eef2ff);
+}
+
+/* HEADER */
+.header{background:#fff;border-bottom:1px solid var(--border)}
+.header-inner{
+  max-width:1100px;margin:auto;padding:14px 20px;
+  display:flex;justify-content:space-between;align-items:center
+}
+.logo{display:flex;gap:10px;align-items:center;font-weight:800}
+.logo span{
+  background:#2563eb;color:#fff;width:40px;height:40px;
+  display:flex;align-items:center;justify-content:center;border-radius:10px
+}
+.nav-btn{
+  background:#2563eb;color:#fff;padding:8px 16px;
+  border-radius:10px;text-decoration:none;font-weight:600
+}
+
+/* LAYOUT */
+.container{max-width:1100px;margin:30px auto;padding:20px}
+.layout{display:grid;grid-template-columns:1fr 420px;gap:30px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}}
+
+/* CARD */
+.card{
+  background:#fff;border-radius:18px;padding:22px;
+  box-shadow:0 14px 35px rgba(0,0,0,.08);margin-bottom:20px
+}
+
+/* TABLE */
+table{border-collapse:collapse;width:100%}
+th{font-size:13px;color:#6b7280;text-align:left}
+td{padding:6px 4px;font-size:14px}
+.col-rank{width:30px;text-align:right}
+.col-icon{width:28px;text-align:center}
+.col-pct{width:90px;text-align:right;font-weight:600}
+
+/* STOCK GRID */
+.stock-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.stock{
+  padding:12px;border:1px solid var(--border);
+  border-radius:12px;text-align:center;cursor:pointer
+}
+.stock.selected{background:#dbeafe;border-color:#2563eb}
+
+/* DRAG */
+.rank-box{
+  border:2px dashed #c7d2fe;border-radius:14px;
+  padding:10px;margin-bottom:12px;background:#f8fafc
+}
+.rank-box.active{border-color:#2563eb}
+.slot{min-height:44px}
+
+.draggable{
+  background:#e0e7ff;
+  padding:10px;
+  border-radius:10px;
+  cursor:grab;
+  text-align:center;
+  user-select:none;
+}
+
+/* BUTTON */
+button{
+  width:100%;padding:14px;background:#2563eb;
+  color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer
+}
+.error{color:#dc2626;font-size:13px}
+</style>
+
+<script src="config.js"></script>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo"><span>ES</span> EquitySkill</div>
+    <a href="dashboard.html" class="nav-btn">Dashboard</a>
+  </div>
+</div>
+
+<div class="container">
+<div class="layout">
+
+<!-- LEFT -->
+<div class="card">
+  <h3 id="rankingTitle">Loading Ranking...</h3>
+  <table>
+    <thead>
+      <tr>
+        <th class="col-rank">#</th>
+        <th class="col-icon"></th>
+        <th>Stock</th>
+        <th class="col-pct">Change %</th>
+      </tr>
+    </thead>
+    <tbody id="liveRanking"></tbody>
+  </table>
+</div>
+
+<!-- RIGHT -->
+<div>
+
+<!-- STEP 1 -->
+<div class="card" id="step1">
+  <h3>Select 5 Stocks</h3>
+  <div class="stock-grid" id="stockList"></div>
+  <p>Selected <b><span id="count">0</span>/5</b></p>
+  <div class="error" id="err"></div>
+  <button onclick="goNext()">Continue</button>
+</div>
+
+<!-- STEP 2 -->
+<div class="card" id="step2" style="display:none">
+  <h3>Rank Your Top 3</h3>
+
+  <div class="rank-box" id="box-gold">
+    <h4>🥇 Gold</h4>
+    <div class="slot" id="gold"
+      ondrop="drop(event,'gold')"
+      ondragover="allowDrop(event)">
+    </div>
+  </div>
+
+  <div class="rank-box" id="box-silver">
+    <h4>🥈 Silver</h4>
+    <div class="slot" id="silver"
+      ondrop="drop(event,'silver')"
+      ondragover="allowDrop(event)">
+    </div>
+  </div>
+
+  <div class="rank-box" id="box-bronze">
+    <h4>🥉 Bronze</h4>
+    <div class="slot" id="bronze"
+      ondrop="drop(event,'bronze')"
+      ondragover="allowDrop(event)">
+    </div>
+  </div>
+
+  <h4>Remaining Stocks</h4>
+  <div class="stock-grid" id="remaining"
+    ondrop="dropToRemaining(event)"
+    ondragover="allowDrop(event)">
+  </div>
+
+  <div class="error" id="rankErr"></div>
+  <button onclick="submitFinal()">Submit Entry</button>
+</div>
+
+</div>
+</div>
+</div>
+
+<script>
+const MODE = getGameMode();
+const API = getAPI();
+
+const isEdit =
+  new URLSearchParams(window.location.search).get("edit") === "1";
+
+
+let STOCKS=[], selected=[];
+let ranking={gold:null,silver:null,bronze:null};
+let selectedRank=null;
+let CURRENT_WEEK="";
+
+/* INIT */
+window.onload = () => {
+  loadStocks();
+  loadRanking();
+
+  if (isEdit) {
+    preloadSubmission();   // ✅ ADD
+  }
+};
+
+
+/* LOAD STOCKS */
+function loadStocks(){
+ fetch(API+"?action=init").then(r=>r.json()).then(d=>{
+  STOCKS=d.stocks||[];
+  CURRENT_WEEK=d.week||"";
+  localStorage.setItem("CURRENT_WEEK",CURRENT_WEEK);
+  renderStocks();
+ });
+}
+
+function renderStocks(){
+ stockList.innerHTML="";
+ selected=[];
+ count.innerText=0;
+ STOCKS.forEach(s=>{
+  const d=document.createElement("div");
+  d.className="stock";
+  d.innerText=s;
+  d.onclick=()=>toggle(s,d);
+  stockList.appendChild(d);
+ });
+}
+
+function toggle(s,el){
+ if(selected.includes(s)){
+  selected=selected.filter(x=>x!==s);
+  el.classList.remove("selected");
+ }else if(selected.length<5){
+  selected.push(s);
+  el.classList.add("selected");
+ }
+ count.innerText=selected.length;
+}
+
+/* STEP */
+function goNext(){
+ if(selected.length!==5){err.innerText="Select exactly 5 stocks";return;}
+ step1.style.display="none";
+ step2.style.display="block";
+ remaining.innerHTML="";
+ selected.forEach(s=>{
+  remaining.appendChild(makeDraggable(s));
+ });
+}
+
+/* DRAG HELPERS */
+function makeDraggable(stock){
+ const d=document.createElement("div");
+ d.className="draggable";
+ d.id=stock;
+ d.innerText=stock;
+ d.draggable=true;
+ d.ondragstart=drag;
+ return d;
+}
+
+function drag(e){e.dataTransfer.setData("text",e.target.id);}
+function allowDrop(e){e.preventDefault();}
+
+/* DROP TO SLOT */
+function drop(e,pos){
+ e.preventDefault();
+ const stock=e.dataTransfer.getData("text");
+
+ if(ranking[pos]) return;
+ if(Object.values(ranking).includes(stock)) return;
+
+ ranking[pos]=stock;
+ document.getElementById(stock)?.remove();
+ renderRanks();
+}
+
+/* DROP BACK */
+function dropToRemaining(e){
+ e.preventDefault();
+ const stock=e.dataTransfer.getData("text");
+
+ Object.keys(ranking).forEach(k=>{
+  if(ranking[k]===stock) ranking[k]=null;
+ });
+
+ remaining.appendChild(makeDraggable(stock));
+ renderRanks();
+}
+
+/* CLICK SWAP */
+function selectRank(pos){
+ if(!ranking[pos]) return;
+
+ if(!selectedRank){
+  selectedRank=pos;
+  document.getElementById("box-"+pos).classList.add("active");
+  return;
+ }
+
+ if(selectedRank===pos){
+  resetSelect();return;
+ }
+
+ [ranking[pos],ranking[selectedRank]]=
+ [ranking[selectedRank],ranking[pos]];
+
+ renderRanks();
+ resetSelect();
+}
+
+function resetSelect(){
+ ["gold","silver","bronze"].forEach(p=>{
+  document.getElementById("box-"+p).classList.remove("active");
+ });
+ selectedRank=null;
+}
+
+/* RENDER RANKS */
+function renderRanks(){
+ ["gold","silver","bronze"].forEach(p=>{
+  const slot=document.getElementById(p);
+  slot.innerHTML="";
+  if(!ranking[p]) return;
+
+  const d=makeDraggable(ranking[p]);
+  d.onclick=()=>selectRank(p);
+  slot.appendChild(d);
+ });
+}
+
+/* SUBMIT */
+function submitFinal(){
+
+  if(!ranking.gold || !ranking.silver || !ranking.bronze){
+    rankErr.innerText = "Please rank Gold, Silver & Bronze";
+    return;
+  }
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const week = localStorage.getItem("CURRENT_WEEK");
+
+  if(!user.username || !week){
+    alert("Session expired. Please login again.");
+    location.href = "login.html";
+    return;
+  }
+
+  const top3 = {
+    gold: ranking.gold,
+    silver: ranking.silver,
+    bronze: ranking.bronze
+  };
+
+  const params = new URLSearchParams({
+    action: "submitEntry",
+    week: week,
+    username: user.username,
+    email: user.email || "",
+    phone: user.phone || "",
+    selected5: JSON.stringify(selected),
+    top3: JSON.stringify(top3)          // ✅ SINGLE FIELD
+  });
+
+  fetch(API + "?" + params.toString())
+  .then(r => r.json())
+
+  const btn = document.querySelector("#step2 button");
+  btn.disabled = true;
+  btn.innerText = "Submitting...";
+
+  fetch(API + "?" + params.toString())
+    .then(r => r.json())
+    .then(res => {
+      if(res.success){
+        alert("✅ Submission successful!");
+        location.href = "dashboard.html";
+      }else{
+        alert(res.message || "❌ Submission failed");
+        btn.disabled = false;
+        btn.innerText = "Submit Entry";
+      }
+    })
+    .catch(() => {
+      alert("⚠️ Network error");
+      btn.disabled = false;
+      btn.innerText = "Submit Entry";
+    });
+}
+
+
+/* RANKING */
+function loadRanking(){
+ fetch(API+"?action=homeRanking").then(r=>r.json()).then(d=>{
+  rankingTitle.innerText=
+   d.mode==="LAST"?"Previous Week Ranking":
+   MODE==="daily"?"Today's Live Ranking":"Weekly Live Ranking";
+
+  liveRanking.innerHTML="";
+  (d.ranking||[]).forEach((r,i)=>{
+   let icon=i==0?"🥇":i==1?"🥈":i==2?"🥉":i<5?"🔥":"";
+   liveRanking.innerHTML+=`
+    <tr>
+     <td class="col-rank">${i+1}</td>
+     <td class="col-icon">${icon}</td>
+     <td>${r.stock}</td>
+     <td class="col-pct">${r.pct}%</td>
+    </tr>`;
+  });
+ });
+}
+
+function preloadSubmission(){
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const week = localStorage.getItem("CURRENT_WEEK");
+
+  if(!user.username || !week) return;
+
+  fetch(`${API}?action=mySubmission&username=${encodeURIComponent(user.username)}&week=${week}`)
+    .then(r => r.json())
+    .then(d => {
+
+      if(d.status !== "FOUND") return;
+
+      // preselect stocks
+      selected = d.selected5 || [];
+      ranking = d.top3 || { gold:null, silver:null, bronze:null };
+
+      // update UI
+      document.querySelectorAll(".stock").forEach(el => {
+        if(selected.includes(el.innerText)){
+          el.classList.add("selected");
+        }
+      });
+
+      count.innerText = selected.length;
+    });
+}
+
+</script>
+
+</body>
+</html>

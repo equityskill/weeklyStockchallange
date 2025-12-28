@@ -14,36 +14,44 @@ body{
 .container{
   max-width:420px;
   margin:80px auto;
+  padding:20px;
+}
+.card{
   background:#fff;
-  padding:28px;
-  border-radius:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.08);
+  border-radius:18px;
+  padding:22px;
+  box-shadow:0 14px 40px rgba(0,0,0,.08);
 }
 h2{
-  text-align:center;
-  margin-bottom:20px;
+  margin:0 0 6px;
+}
+p{
+  margin:0 0 14px;
+  color:#6b7280;
+  font-size:14px;
 }
 input{
   width:100%;
-  padding:12px;
-  margin-bottom:14px;
-  border-radius:10px;
-  border:1px solid #ddd;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #e5e7eb;
+  margin-bottom:12px;
 }
 button{
   width:100%;
-  padding:12px;
+  padding:14px;
   border:none;
   border-radius:12px;
   background:#2563eb;
   color:#fff;
-  font-weight:600;
+  font-size:15px;
+  font-weight:700;
   cursor:pointer;
 }
 .error{
+  font-size:13px;
   color:#dc2626;
-  text-align:center;
-  margin-top:10px;
+  margin-bottom:10px;
 }
 .link{
   text-align:center;
@@ -51,71 +59,84 @@ button{
 }
 .link a{
   color:#2563eb;
+  font-weight:600;
   text-decoration:none;
 }
+.mode{
+  font-size:12px;
+  font-weight:700;
+  color:#2563eb;
+  margin-bottom:10px;
+}
 </style>
+
+<script src="config.js"></script>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Login</h2>
+  <div class="card">
 
-  <input id="username" placeholder="Username / Email">
-  <input id="phone" placeholder="Phone">
-  <button onclick="login()">Login</button>
+    <div class="mode" id="modeText">—</div>
 
-  <div class="error" id="error"></div>
+    <h2>Login</h2>
+    <p>Welcome back to EquitySkill</p>
 
-  <div class="link">
-    New user? <a href="signup.html">Signup</a>
+    <div class="error" id="error"></div>
+
+    <input id="username" placeholder="Username">
+    <input id="phone" placeholder="Phone number">
+
+    <button onclick="login()">Login</button>
+
+    <div class="link">
+      New here? <a href="signup.html">Create account</a>
+    </div>
+
   </div>
 </div>
 
-<!-- ✅ CONFIG MUST LOAD FIRST -->
-<script src="config.js"></script>
-
 <script>
-const API = CONFIG.WEB_APP_URL;
+/* ================= CONFIG ================= */
+const MODE = getGameMode();
+const USER_API = CONFIG.USER_WEB_APP_URL;
 
-// Already logged-in guard
-// const existingUser = localStorage.getItem("user");
-if(existingUser){
-  window.location.replace("index.html");
+/* ================= UI ================= */
+document.getElementById("modeText").innerText =
+  MODE === "daily"
+    ? "📅 Daily Challenge Login"
+    : "🏆 Weekly Challenge Login";
 
-}
-
+/* ================= LOGIN ================= */
 function login(){
-  const username = document.getElementById("username").value.trim();
-  const phone = document.getElementById("phone").value.trim();
-  const error = document.getElementById("error");
+  const u = document.getElementById("username").value.trim().toLowerCase();
+const p = document.getElementById("phone").value.trim();
 
-  error.innerText = "";
 
-  if(!username || !phone){
-    error.innerText = "Please enter all details";
+  if(!u || !p){
+    error.innerText = "Username and phone required";
     return;
   }
 
-  fetch(`${API}?action=loginUser&username=${encodeURIComponent(username)}&phone=${encodeURIComponent(phone)}`)
-    .then(res => res.json())
-    .then(d => {
-      if(d.success){
-        // Standardized session object
-        localStorage.setItem("user", JSON.stringify({
-          username: d.user.username,
-          name: d.user.name || d.user.username,
-          email: d.user.email || "",
-          phone: d.user.phone || phone
-        }));
-
-        location.href = "dashboard.html";
-      } else {
-        error.innerText = d.message || "Invalid login";
+  fetch(`${USER_API}?action=loginUser&username=${encodeURIComponent(u)}&phone=${encodeURIComponent(p)}`)
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.success){
+        error.innerText = "Invalid username or phone";
+        return;
       }
+
+      // ✅ Save session
+      localStorage.setItem("user", JSON.stringify(d.user));
+
+      // Redirect based on mode
+      location.href = MODE === "daily"
+        ? "index.html?mode=daily"
+        : "index.html?mode=weekly";
     })
-    .catch(() => {
-      error.innerText = "Server error. Try again.";
+    .catch(()=>{
+      error.innerText = "Login failed. Try again.";
     });
 }
 </script>

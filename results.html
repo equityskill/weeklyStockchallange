@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EquitySkill – Weekly Results</title>
+<title>EquitySkill – Results</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -14,10 +14,8 @@
   --muted:#6b7280;
   --border:#e5e7eb;
 }
-
 *{box-sizing:border-box}
 
-/* ===== PAGE BACKGROUND ===== */
 body{
   margin:0;
   font-family:Inter,Arial,sans-serif;
@@ -28,72 +26,33 @@ body{
   color:var(--text);
 }
 
-/* ===== HEADER ===== */
+/* HEADER */
 .topbar{
-  position:sticky;
-  top:0;
-  z-index:100;
-  background:
-    linear-gradient(90deg, rgba(37,99,235,.08), rgba(99,102,241,.08)),
-    rgba(255,255,255,.7);
-  backdrop-filter: blur(14px);
+  position:sticky;top:0;z-index:100;
+  background:rgba(255,255,255,.85);
+  backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
 }
-
 .topbar-inner{
-  max-width:1100px;
-  margin:0 auto;
+  max-width:1100px;margin:auto;
   padding:14px 20px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  display:flex;justify-content:space-between;align-items:center;
 }
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-}
-
+.brand{display:flex;gap:12px;align-items:center}
 .logo-box{
-  width:44px;
-  height:44px;
-  border-radius:12px;
+  width:44px;height:44px;border-radius:12px;
   background:linear-gradient(135deg,#2563eb,#4f46e5);
-  color:#fff;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
-  font-size:18px;
-  box-shadow:0 10px 25px rgba(37,99,235,.35);
+  color:#fff;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
 }
-
-.brand-name{
-  font-size:18px;
-  font-weight:800;
-}
-
-.brand-tagline{
-  font-size:11px;
-  color:#6b7280;
-}
-
-.right{
-  display:flex;
-  align-items:center;
-  gap:14px;
-}
-
+.brand-name{font-weight:800}
+.brand-tagline{font-size:11px;color:#6b7280}
+.right{display:flex;gap:14px;align-items:center}
 .status{
-  font-size:12px;
-  font-weight:600;
-  padding:6px 12px;
-  border-radius:20px;
-  background:#eef2ff;
-  color:#3730a3;
+  font-size:12px;font-weight:700;
+  padding:6px 14px;border-radius:20px;
+  background:#eef2ff;color:#3730a3;
 }
-
 .nav-btn{
   text-decoration:none;
   padding:8px 16px;
@@ -103,22 +62,18 @@ body{
   background:#e5e7eb;
   color:#111827;
 }
-
 .nav-btn:hover{background:#dbeafe}
 
-/* ===== LAYOUT ===== */
+/* LAYOUT */
 .container{
-  max-width:420px;
+  max-width:900px;
   margin:30px auto 60px;
   padding:20px;
 }
-@media(min-width:768px){
-  .container{max-width:900px;}
-}
 
-/* ===== CARDS ===== */
+/* CARD */
 .card{
-  background:rgba(255,255,255,.95);
+  background:#fff;
   border-radius:16px;
   padding:22px;
   box-shadow:0 14px 35px rgba(0,0,0,.08);
@@ -128,28 +83,28 @@ body{
 h2,h3{margin:0 0 10px}
 p{margin:0 0 10px;color:var(--muted);font-size:14px}
 
-/* ===== BADGES ===== */
+/* BADGES */
 .badge{
   display:inline-block;
   padding:8px 18px;
   border-radius:20px;
   font-size:14px;
   font-weight:700;
-  margin-top:8px;
 }
 .badge.win{background:#dcfce7;color:#166534}
 .badge.nowin{background:#fee2e2;color:#991b1b}
 
-/* ===== LIST ===== */
+/* LIST */
 .list{list-style:none;padding:0;margin:0}
 .list li{
   padding:12px 10px;
   border-bottom:1px solid var(--border);
   display:flex;
   justify-content:space-between;
+  gap:10px;
 }
 
-/* ===== TABLE ===== */
+/* TABLE */
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{
   padding:10px;
@@ -158,20 +113,35 @@ th,td{
 }
 th{color:var(--muted)}
 
-.rank{font-weight:700}
-
-/* ===== SELECT ===== */
+/* SELECT */
 select{
   width:100%;
   padding:12px;
   border-radius:10px;
   border:1px solid var(--border);
-  margin-top:8px;
+  margin-top:10px;
 }
+
+.stats-tabs{
+  display:flex;
+  gap:12px;
+}
+.tab{
+  padding:8px 18px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  font-weight:700;
+  background:#e5e7eb;
+}
+.tab.active{
+  background:#2563eb;
+  color:#fff;
+}
+
 </style>
 
 <script src="config.js"></script>
-
 </head>
 
 <body>
@@ -182,36 +152,43 @@ select{
       <div class="logo-box">ES</div>
       <div>
         <div class="brand-name">EquitySkill</div>
-        <div class="brand-tagline">Weekly Results</div>
+        <div class="brand-tagline" id="pageTagline"></div>
       </div>
     </div>
     <div class="right">
       <span class="status">● Results</span>
       <a class="nav-btn" href="index.html">Home</a>
+      <a class="nav-btn" href="dashboard.html">Dashboard</a>
     </div>
   </div>
 </header>
 
 <div class="container">
 
-<!-- CURRENT WEEK -->
+  <div class="card" style="padding:14px">
+  <div class="stats-tabs">
+    <button class="tab active" onclick="switchMode('weekly', this)">Weekly</button>
+    <button class="tab" onclick="switchMode('daily', this)">Daily</button>
+  </div>
+</div>
+
+<!-- CURRENT RESULT -->
 <div class="card">
-  <h2>📊 Weekly Results</h2>
+  <h2 id="resultTitle"></h2>
   <p id="weekText">Loading…</p>
   <div id="winnerBox"></div>
 </div>
 
 <div class="card">
-  <h3>🔥 Top 5 Gainer Stocks</h3>
-  <ul class="list" id="top5List"></ul>
+  <h3 id="topTitle"></h3>
+  <ul class="list" id="topList"></ul>
 </div>
 
-
-<!-- PREVIOUS WEEKS -->
+<!-- PREVIOUS -->
 <div class="card">
   <h3>📅 View Previous Results</h3>
-  <select id="weekSelect" onchange="loadSelectedWeek()">
-    <option>Loading weeks…</option>
+  <select id="periodSelect" onchange="loadSelectedPeriod()">
+    <option>Loading…</option>
   </select>
 
   <table style="margin-top:15px">
@@ -223,7 +200,7 @@ select{
       </tr>
     </thead>
     <tbody id="stockTable">
-      <tr><td colspan="3">Select a week</td></tr>
+      <tr><td colspan="3">Select a period</td></tr>
     </tbody>
   </table>
 </div>
@@ -231,148 +208,159 @@ select{
 </div>
 
 <script>
-/* ===== CONFIG ===== */
-const API = CONFIG.WEB_APP_URL;
+/* ===== MODE & API ===== */
+let MODE = "weekly";
+let API = CONFIG.WEEKLY_WEB_APP_URL;
+
+function switchMode(mode, btn){
+  MODE = mode;
+  API = mode === "daily"
+    ? CONFIG.DAILY_WEB_APP_URL
+    : CONFIG.WEEKLY_WEB_APP_URL;
+
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+
+  document.getElementById("pageTagline").innerText =
+    mode === "daily" ? "Daily Results" : "Weekly Results";
+
+  document.getElementById("resultTitle").innerText =
+    mode === "daily" ? "📊 Daily Challenge Results" : "📊 Weekly Challenge Results";
+
+  document.getElementById("topTitle").innerText =
+    mode === "daily" ? "🔥 Top 5 Gainers (Today)" : "🔥 Top 5 Gainer Stocks";
+
+  loadCurrentResult();
+  loadPreviousPeriods();
+}
 
 
+/* ===== AUTH ===== */
 const user = JSON.parse(localStorage.getItem("user"));
 if(!user){
   location.href = "login.html";
 }
 
+/* ===== UI TEXT ===== */
+document.getElementById("pageTagline").innerText =
+  MODE === "daily" ? "Daily Results" : "Weekly Results";
 
+document.getElementById("resultTitle").innerText =
+  MODE === "daily" ? "📊 Daily Challenge Results" : "📊 Weekly Challenge Results";
+
+document.getElementById("topTitle").innerText =
+  MODE === "daily" ? "🔥 Top 5 Gainers (Today)" : "🔥 Top 5 Gainer Stocks";
+
+/* ===== INIT ===== */
 window.onload = () => {
-  loadWeeklyResult();
-  loadPreviousWeeks();
+  loadCurrentResult();
+  loadPreviousPeriods();
 };
 
-/* ===== CURRENT WEEK ===== */
-function loadWeeklyResult(){
+/* ===== CURRENT RESULT ===== */
+function loadCurrentResult(){
   fetch(API + "?action=weeklyResult")
     .then(r => r.json())
     .then(d => {
 
       if(!d || !d.week){
-        document.getElementById("weekText").innerText = "Results not available";
+        weekText.innerText = "Results not available";
         return;
       }
 
-      document.getElementById("weekText").innerText = "Week: " + d.week;
+      weekText.innerText =
+        MODE === "daily" ? `Date: ${d.week}` : `Week: ${d.week}`;
 
-      const box = document.getElementById("winnerBox");
-      if (!d.winnerCount || !d.winners || d.winners.length === 0) {
-        box.innerHTML =
-          `<span class="badge nowin">❌ No winner this week</span>`;
-      } else {
-        box.innerHTML =
+      if(!d.winners || d.winners.length === 0){
+        winnerBox.innerHTML = ""; // winner logic paused for now
+
+      }else{
+        winnerBox.innerHTML =
           `<span class="badge win">🏆 Winners (${d.winnerCount}): ${d.winners.join(", ")}</span>`;
       }
 
-      // 🔐 SAFE CLEAR
-      top5List.innerHTML = "";
-
+      topList.innerHTML = "";
       if(!d.top5 || d.top5.length === 0){
-        top5List.innerHTML =
-          `<li>No stock data available</li>`;
+        topList.innerHTML = `<li>No stock data</li>`;
         return;
       }
 
-      d.top5.forEach((s, i) => {
-        let badge =
-          i === 0 ? "🥇 Gold" :
-          i === 1 ? "🥈 Silver" :
-          i === 2 ? "🥉 Bronze" :
-          "🔥 Top 5";
+      d.top5.forEach((s,i)=>{
+        const stock = typeof s === "string" ? s : s.stock;
+        const pct = s.pct !== undefined ? ` (${s.pct}%)` : "";
+        const badge =
+          i===0?"🥇 Gold":
+          i===1?"🥈 Silver":
+          i===2?"🥉 Bronze":"🔥 Top 5";
 
-        const stockName = typeof s === "string" ? s : s.stock;
-        const pctText = s.pct !== undefined ? ` (${s.pct}%)` : "";
-
-        top5List.innerHTML += `
+        topList.innerHTML += `
           <li>
-            <b>#${i + 1}</b>
-            <span>${stockName}${pctText}</span>
-            <span style="font-weight:600">${badge}</span>
-          </li>
-        `;
+            <span><b>#${i+1}</b> ${stock}${pct}</span>
+            <span>${badge}</span>
+          </li>`;
       });
-
-    })
-    .catch(() => {
-      document.getElementById("weekText").innerText =
-        "Unable to load weekly results";
     });
 }
 
-
-
-/* ===== PREVIOUS WEEKS ===== */
-function loadPreviousWeeks(){
+/* ===== PREVIOUS ===== */
+function loadPreviousPeriods(){
   fetch(API + "?action=previousResults")
-    .then(r => r.json())
-    .then(d => {
-
-      const sel = document.getElementById("weekSelect");
-      sel.innerHTML = "";
-
-      if(!d || !d.results || d.results.length === 0){
-        sel.innerHTML = `<option>No previous results</option>`;
+    .then(r=>r.json())
+    .then(d=>{
+      periodSelect.innerHTML="";
+      if(!d.results || d.results.length===0){
+        periodSelect.innerHTML=`<option>No data</option>`;
         return;
       }
 
-      d.results.reverse().forEach(r => {
-        const o = document.createElement("option");
-        o.value = r.week;
-        o.innerText = r.week;
-        sel.appendChild(o);
-      });
+      // latest first
+      d.results
+        .sort((a,b)=> b.week.localeCompare(a.week))
+        .forEach(r=>{
+          const o=document.createElement("option");
+          o.value=r.week;
+          o.innerText=r.week;
+          periodSelect.appendChild(o);
+        });
 
-      loadSelectedWeek();
-    })
-    .catch(() => {
-      weekSelect.innerHTML = `<option>Error loading weeks</option>`;
+      loadSelectedPeriod(); // auto load latest
     });
 }
 
 
-function loadSelectedWeek(){
-  const week = weekSelect.value;
-  if(!week) return;
+function loadSelectedPeriod(){
+  const val = periodSelect.value;
+  if(!val) return;
 
-  fetch(API + "?action=weeklyResult&week=" + encodeURIComponent(week))
-    .then(r => r.json())
-    .then(d => {
+  fetch(API + "?action=weeklyResult&week=" + encodeURIComponent(val))
+    .then(r=>r.json())
+    .then(d=>{
 
       stockTable.innerHTML = "";
 
-      if(!d || !d.top15 || d.top15.length === 0){
+      if(!d.ranking || d.ranking.length === 0){
         stockTable.innerHTML =
-          `<tr><td colspan="3">No data available</td></tr>`;
+          `<tr><td colspan="3">No data</td></tr>`;
         return;
       }
 
-      d.top15.forEach((s, i) => {
-        let badge =
-          i === 0 ? "🥇 Gold" :
-          i === 1 ? "🥈 Silver" :
-          i === 2 ? "🥉 Bronze" :
-          i < 5 ? "🔥 Top 5" : "";
+      d.ranking.slice(0,15).forEach((s,i)=>{
+        const stock = s.stock;
+        const pct = ` (${s.pct}%)`;
 
-        const stockName = typeof s === "string" ? s : s.stock;
-        const pctText = s.pct !== undefined ? ` (${s.pct}%)` : "";
+        const badge =
+          i===0?"🥇 Gold":
+          i===1?"🥈 Silver":
+          i===2?"🥉 Bronze":
+          i<5?"🔥 Top 5":"";
 
         stockTable.innerHTML += `
           <tr>
-            <td>${i + 1}</td>
-            <td>${stockName}${pctText}</td>
+            <td>${i+1}</td>
+            <td>${stock}${pct}</td>
             <td>${badge}</td>
-          </tr>
-        `;
+          </tr>`;
       });
-
-    })
-    .catch(() => {
-      stockTable.innerHTML =
-        `<tr><td colspan="3">Error loading data</td></tr>`;
     });
 }
 

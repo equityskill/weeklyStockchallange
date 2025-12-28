@@ -81,10 +81,137 @@ body{
 .actions a.secondary{
   background:#475569;
 }
+.actions a.daily{
+  background:#16a34a;
+}
 .actions a:hover{
   transform:translateY(-2px);
   opacity:.95;
 }
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:700;
+}
+.badge.weekly{background:#e0e7ff;color:#3730a3}
+.badge.daily{background:#dcfce7;color:#166534}
+
+.user-profile{
+  margin-top:12px;
+  max-width:420px;
+}
+
+.user-profile .row{
+  display:flex;
+  justify-content:space-between;
+  padding:6px 0;
+  font-size:14px;
+}
+
+.user-profile .label{
+  color:#6b7280;
+  font-weight:500;
+}
+
+.user-profile .value{
+  font-weight:600;
+}
+
+.edit-btn{
+  margin-top:10px;
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  padding:8px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+.modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.4);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+}
+
+.modal.hidden{
+  display:none;
+}
+
+.modal-box{
+  background:#fff;
+  padding:22px;
+  border-radius:14px;
+  width:100%;
+  max-width:360px;
+}
+
+.modal-box h3{
+  margin-top:0;
+}
+
+.modal-box label{
+  display:block;
+  margin-top:12px;
+  font-size:13px;
+  color:#555;
+}
+
+.modal-box input{
+  width:100%;
+  padding:10px;
+  margin-top:4px;
+  border-radius:8px;
+  border:1px solid #ccc;
+}
+
+.modal-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:18px;
+}
+
+.btn{
+  padding:8px 14px;
+  border:none;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:600;
+}
+
+.btn.primary{background:#2563eb;color:#fff}
+.btn.secondary{background:#e5e7eb}
+
+.stats-tabs{
+  display:flex;
+  gap:12px;
+  margin:12px 0 20px;
+}
+
+.stats-tabs .tab{
+  padding:8px 18px;
+  border-radius:12px;
+  border:none;
+  cursor:pointer;
+  font-weight:600;
+  background:#e5e7eb;
+  color:#374151;
+  transition:.2s ease;
+}
+
+.stats-tabs .tab.active{
+  background:#2563eb;
+  color:#fff;
+  box-shadow:0 6px 14px rgba(37,99,235,.3);
+  transform:translateY(-2px);
+}
+
 </style>
 </head>
 
@@ -100,13 +227,45 @@ body{
 
   <!-- WELCOME -->
   <div class="card">
-    <h2 id="welcome">Welcome</h2>
-    <p style="color:#555;">Weekly Skill Challenge Dashboard</p>
+  <h2 id="welcome">Welcome</h2>
+
+  <div class="user-profile">
+    <div class="row">
+      <span class="label">Username</span>
+      <span class="value" id="profileUsername"></span>
+    </div>
+
+    <div class="row">
+      <span class="label">Email</span>
+      <span class="value" id="profileEmail">—</span>
+    </div>
+
+    <div class="row">
+      <span class="label">Phone</span>
+      <span class="value" id="profilePhone"></span>
+    </div>
+
+    <button class="edit-btn" onclick="openEditProfile()">
+      ✏️ Edit Profile
+    </button>
   </div>
+</div>
+
 
   <!-- STATS -->
   <div class="card">
     <h3>Your Stats</h3>
+
+    <div class="stats-tabs">
+  <button class="tab active" onclick="loadStats('weekly', this)">
+    Weekly Stats
+  </button>
+  <button class="tab" onclick="loadStats('daily', this)">
+    Daily Stats
+  </button>
+</div>
+
+
     <div class="stats">
       <div class="stat">
         <h3 id="totalGames">—</h3>
@@ -121,8 +280,9 @@ body{
         <p>Average Score</p>
       </div>
       <div class="stat">
-        <h3>—</h3>
-        <p>Rank (coming soon)</p>
+        <h3 id="weeklyRank">—</h3>
+<p>Rank (Weekly)</p>
+
       </div>
     </div>
   </div>
@@ -131,12 +291,31 @@ body{
   <div class="card">
     <h3>Actions</h3>
     <div class="actions">
-      <a href="index.html">🎯 Play Weekly Game</a>
-      <a href="my-submission.html">📄 My Submission</a>
-      <a href="leaderboard.html" class="secondary">🏆 Weekly Leaderboard</a>
+      <a href="play.html?mode=weekly">🎯 Play Weekly Game</a>
+      <a href="play.html?mode=daily" class="daily">⚡ Play Daily Challenge</a>
+      <a href="my-submission.html">📄 My Submissions</a>
+      <a href="leaderboard.html" class="secondary">🏆 Leaderboard</a>
       <a href="results.html">📊 Results</a>
     </div>
   </div>
+
+  <!-- EDIT PROFILE MODAL -->
+<div id="editModal" class="modal hidden">
+  <div class="modal-box">
+    <h3>Edit Profile</h3>
+
+    <label>Email</label>
+    <input type="email" id="editEmail" placeholder="Enter email">
+
+    <label>Phone</label>
+    <input type="tel" id="editPhone" placeholder="Enter phone">
+
+    <div class="modal-actions">
+      <button onclick="closeEditProfile()" class="btn secondary">Cancel</button>
+      <button onclick="saveProfile()" class="btn primary">Save</button>
+    </div>
+  </div>
+</div>
 
 </div>
 
@@ -144,33 +323,155 @@ body{
 <script src="config.js"></script>
 
 <script>
-const API = CONFIG.WEB_APP_URL;
-
-// SESSION CHECK
+// ===== SESSION CHECK =====
 const user = JSON.parse(localStorage.getItem("user"));
 if(!user){
   location.href = "login.html";
 }
 
-// Welcome
+// ===== MODE & API =====
+
+const API = getAPI();                // correct webapp
+const USER_API = "https://script.google.com/macros/s/AKfycbxTYoXjKLVaI4PTNZQMGQR_uZ9k9gGIlgRCNIqotskg0dKwpWOlt_OaIr34ue-HLUrW/exec"
+
+// ===== UI TEXT =====
 document.getElementById("welcome").innerText =
   "Welcome, " + (user.name || user.username);
+  document.getElementById("profileUsername").innerText = user.username;
+document.getElementById("profileEmail").innerText = user.email || "—";
+document.getElementById("profilePhone").innerText = user.phone || "—";
 
-// Load dashboard stats
-fetch(`${API}?action=dashboardStats&username=${encodeURIComponent(user.username)}`)
-  .then(r=>r.json())
-  .then(d=>{
-    if(!d.success) return;
+
+
+
+// ===== LOAD DASHBOARD STATS =====
+fetch(`${API}?action=myScores&username=${encodeURIComponent(user.username)}`)
+  .then(r => r.json())
+  .then(d => {
+    if (d.status !== "FOUND") return;
+
     document.getElementById("totalGames").innerText = d.totalGames;
     document.getElementById("bestScore").innerText = d.bestScore;
-    document.getElementById("avgScore").innerText = d.avgScore;
+    document.getElementById("avgScore").innerText =
+      (typeof d.avgScore === "number") ? d.avgScore : "—";
   });
 
-// Logout
+
+// ===== LOGOUT =====
 function logout(){
   localStorage.removeItem("user");
   location.href = "login.html";
 }
+
+function openEditProfile(){
+  document.getElementById("editEmail").value = user.email || "";
+  document.getElementById("editPhone").value = user.phone || "";
+  document.getElementById("editModal").classList.remove("hidden");
+}
+
+function closeEditProfile(){
+  document.getElementById("editModal").classList.add("hidden");
+}
+
+function saveProfile(){
+
+  const email = document.getElementById("editEmail").value.trim();
+  const phone = document.getElementById("editPhone").value.trim();
+
+  if(!phone){
+    alert("Phone number is required");
+    return;
+  }
+  if(!/^\d{10}$/.test(phone)){
+  alert("Phone number must be exactly 10 digits");
+  return;
+}
+
+  const url =
+  `${USER_API}?action=updateUserProfile` +
+
+    `&username=${encodeURIComponent(user.username)}` +
+    `&email=${encodeURIComponent(email)}` +
+    `&phone=${encodeURIComponent(phone)}`;
+
+  fetch(url)
+    .then(r=>r.json())
+    .then(d=>{
+      if(!d.success){
+        alert(d.message || "Update failed");
+        return;
+      }
+
+      // update local storage
+      user.email = email;
+      user.phone = phone;
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // update UI
+      document.getElementById("profileEmail").innerText = email || "—";
+      document.getElementById("profilePhone").innerText = phone;
+
+      closeEditProfile();
+      alert("Profile updated successfully");
+    });
+}
+
+function loadStats(mode, btn){
+
+  document.querySelectorAll(".stats-tabs .tab")
+    .forEach(b => b.classList.remove("active"));
+
+  btn.classList.add("active");
+
+  if(mode === "weekly"){
+    loadWeeklyStats();
+    loadWeeklyRank();
+  }else{
+    loadDailyStats();
+  }
+}
+
+function loadWeeklyStats(){
+  fetch(`${API}?action=myScores&username=${encodeURIComponent(user.username)}`)
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.status !== "FOUND") return;
+
+      document.getElementById("totalGames").innerText = d.totalGames;
+      document.getElementById("bestScore").innerText = d.bestScore;
+      document.getElementById("avgScore").innerText =
+        (typeof d.avgScore === "number") ? d.avgScore : "—";
+    });
+}
+
+
+function loadWeeklyRank(){
+
+  fetch(`${API}?action=myWeeklyRank&username=${encodeURIComponent(user.username)}`)
+    .then(r => r.json())
+    .then(d => {
+
+      const rankEl = document.getElementById("weeklyRank");
+
+      if (!rankEl) return; // safety
+
+      if (d.status === "FOUND") {
+        rankEl.innerText = `${d.rank} / ${d.totalPlayers}`;
+      }
+      else if (d.status === "NOT_PLAYED") {
+        rankEl.innerText = "Not played";
+      }
+      else {
+        rankEl.innerText = "—";
+      }
+    });
+}
+
+
+// Initial load (default = weekly)
+loadWeeklyStats();
+loadWeeklyRank();
+
 </script>
 
 </body>

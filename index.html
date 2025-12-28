@@ -2,17 +2,20 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>EquitySkill – Weekly Stock Challenge</title>
+<title>EquitySkill – Stock Challenge</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
 :root{
   --primary:#2563eb;
+  --weekly:#2563eb;
+  --daily:#16a34a;
   --card:#ffffff;
   --text:#1f2937;
   --muted:#6b7280;
   --border:#e5e7eb;
 }
+
 *{box-sizing:border-box}
 
 body{
@@ -22,638 +25,214 @@ body{
     radial-gradient(1200px 600px at 10% -10%, #e0e7ff, transparent),
     radial-gradient(1200px 600px at 90% 10%, #dbeafe, transparent),
     linear-gradient(180deg, #f8fafc, #eef2ff);
+  color:var(--text);
 }
 
-/* HEADER */
-.topbar{
-  position:sticky;top:0;z-index:100;
-  background:rgba(255,255,255,.8);
+/* ===== HEADER ===== */
+.header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  background:rgba(255,255,255,.9);
   backdrop-filter:blur(14px);
   border-bottom:1px solid var(--border);
 }
-.topbar-inner{
-  max-width:1100px;margin:auto;
+
+.header-inner{
+  max-width:1100px;
+  margin:auto;
   padding:14px 20px;
-  display:flex;justify-content:space-between;align-items:center;
-}
-.brand{display:flex;gap:12px;align-items:center}
-.logo-box{
-  width:44px;height:44px;border-radius:12px;
-  background:linear-gradient(135deg,#2563eb,#4f46e5);
-  color:#fff;font-weight:900;
-  display:flex;align-items:center;justify-content:center;
-}
-.brand-name{font-weight:800}
-.brand-tagline{font-size:11px;color:#6b7280}
-.right{display:flex;gap:12px;align-items:center}
-.status{
-  padding:6px 12px;border-radius:20px;
-  background:#dcfce7;color:#166534;
-  font-size:12px;font-weight:600;
-}
-.nav-btn{
-  background:#2563eb;color:#fff;
-  padding:8px 16px;border-radius:10px;
-  font-size:14px;font-weight:600;
-  text-decoration:none;
-}
-
-/* LAYOUT */
-.container{max-width:1100px;margin:30px auto;padding:20px}
-.layout{display:grid;grid-template-columns:1fr 420px;gap:30px}
-@media(max-width:900px){
-  .layout{display:flex;flex-direction:column}
-  .right-panel{order:1}
-  .left-panel{order:2}
-}
-
-/* CARD */
-.card{
-  background:#fff;border-radius:16px;
-  padding:22px;margin-bottom:22px;
-  box-shadow:0 14px 35px rgba(0,0,0,.08);
-}
-h2,h3{margin:0 0 10px}
-p{font-size:14px;color:#6b7280}
-.step{font-size:12px;color:#2563eb;font-weight:600}
-
-.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
-.stock{
-  padding:12px;text-align:center;
-  border:1px solid var(--border);
-  border-radius:12px;cursor:pointer;
-}
-.stock.selected{background:#dbeafe;border-color:#2563eb}
-
-input,select{
-  width:100%;padding:12px;
-  border-radius:10px;border:1px solid var(--border);
-  margin-bottom:12px;
-}
-button{
-  width:100%;padding:14px;
-  background:#2563eb;color:#fff;
-  border:none;border-radius:12px;
-  font-size:15px;font-weight:600;
-}
-button.secondary{background:#e5e7eb;color:#111}
-.error{color:#dc2626;font-size:13px}
-
-section{display:none}
-
-/* TABLE */
-table{width:100%;border-collapse:collapse;font-size:14px}
-th,td{padding:10px;border-bottom:1px solid var(--border)}
-th{color:#6b7280}
-.top5{background:#f8fafc}
-.sep{border-top:2px solid #c7d2fe}
-
-/* ===== MOBILE MENU ===== */
-.mobile-menu-btn{
-  display:none;
-  font-size:26px;
-  cursor:pointer;
-  padding:6px 10px;
-  border-radius:8px;
-  background:#2563eb;
-  color:#fff;
-}
-
-/* slide menu */
-.mobile-menu{
-  position:fixed;
-  top:0;
-  right:-260px;
-  width:260px;
-  height:100%;
-  background:#ffffff;
-  box-shadow:-10px 0 30px rgba(0,0,0,.25);
-  z-index:9999;
-  padding:20px;
-  transition:.3s ease;
-}
-
-.mobile-menu.open{ right:0; }
-
-.mobile-menu .menu-header{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  font-weight:700;
-  margin-bottom:20px;
 }
 
-.mobile-menu a{
-  display:block;
-  padding:14px 10px;
-  margin-bottom:10px;
+.brand{
+  display:flex;
+  gap:12px;
+  align-items:center;
+}
+
+.logo{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  background:linear-gradient(135deg,#2563eb,#4f46e5);
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+}
+
+.brand-name{
+  font-weight:800;
+}
+
+.brand-tagline{
+  font-size:11px;
+  color:var(--muted);
+}
+
+.dashboard-btn{
+  background:var(--primary);
+  color:#fff;
+  padding:8px 16px;
   border-radius:10px;
   text-decoration:none;
-  color:#111827;
   font-weight:600;
-  background:#f1f5f9;
 }
 
-/* ===== RESPONSIVE RULES ===== */
-@media(max-width:768px){
-  .desktop-nav{display:none;}
-  .mobile-menu-btn{display:block;}
+/* ===== LAYOUT ===== */
+.container{
+  max-width:1100px;
+  margin:40px auto;
+  padding:20px;
 }
 
-  .rules-link{
-    color:#2563eb;
-    font-weight:600;
-    cursor:pointer;
-    text-decoration:underline;
-  }
-  .rules-link:hover{
-    opacity:.8;
-  }
+.layout{
+  display:grid;
+  grid-template-columns:1fr 420px;
+  gap:30px;
+}
 
-  .nav-primary{
-  background:#2563eb;
+@media(max-width:900px){
+  .layout{
+    display:flex;
+    flex-direction:column;
+  }
+}
+
+/* ===== CARDS ===== */
+.card{
+  background:var(--card);
+  border-radius:18px;
+  padding:24px;
+  box-shadow:0 14px 35px rgba(0,0,0,.08);
+  margin-bottom:24px;
+}
+
+.card h3{
+  margin-top:0;
+}
+
+.card ul{
+  padding-left:18px;
+}
+
+.card li{
+  margin-bottom:6px;
+}
+
+/* ===== BUTTONS ===== */
+.play-box{
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+}
+
+.play-btn{
+  display:block;
+  padding:16px;
+  text-align:center;
+  border-radius:14px;
+  text-decoration:none;
+  font-size:16px;
+  font-weight:700;
   color:#fff;
+  transition:.15s ease;
 }
 
+.play-btn:hover{
+  transform:translateY(-2px);
+  opacity:.95;
+}
+
+.play-weekly{ background:var(--weekly); }
+.play-daily{ background:var(--daily); }
+
+/* ===== FOOT NOTE ===== */
+.note{
+  font-size:13px;
+  color:var(--muted);
+  margin-top:10px;
+}
 </style>
-
-<script src="config.js"></script>
-
 </head>
 
 <body>
 
-<header class="topbar">
-  <div class="topbar-inner">
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-inner">
     <div class="brand">
-      <div class="logo-box">ES</div>
+      <div class="logo">ES</div>
       <div>
         <div class="brand-name">EquitySkill</div>
-        <div class="brand-tagline">Skill-based stock challenge</div>
+        <div class="brand-tagline">Skill-based stock challenges</div>
       </div>
     </div>
-    <div class="right desktop-nav">
- <span id="contestStatus" class="status">● Contest Open</span>
-<a class="nav-btn" href="results.html">Results</a>
-<a class="nav-btn nav-primary" href="dashboard.html">My Dashboard</a>
 
-
+    <a href="dashboard.html" class="dashboard-btn">Dashboard</a>
+  </div>
 </div>
 
-<!-- Mobile Menu Button -->
-<div class="mobile-menu-btn" onclick="openMenu()">☰</div>
-  </div>
-</header>
-
+<!-- ===== MAIN ===== -->
 <div class="container">
-<div class="layout">
+  <div class="layout">
 
-<!-- LEFT -->
-<div class="left-panel">
-  <div class="card">
-    <h3>🏆 Weekly Skill Challenge</h3>
-    <ul>
-  <li>From <b>15 weekly stocks</b>, pick any <b>5</b> you think will perform best.</li>
-  <li>Arrange your <b>Top 3</b> in exact order (🥇 Gold, 🥈 Silver, 🥉 Bronze).</li>
-  <li>
-    Rankings are calculated using <b>weekly stock performance</b>
-    (Friday close vs next Friday close).
-  </li>
-  <li>
-    📜 <span class="rules-link" onclick="openTC()">Read full rules & eligibility</span>
-  </li>
-</ul>
+    <!-- LEFT : INFO -->
+    <div>
 
-    <p>🏆 <b>Prize:</b> ₹25,000<br>🎟 <b>Entry:</b> Free</p>
-  </div>
+      <div class="card">
+        <h3>🏆 Weekly Skill Challenge</h3>
+        <ul>
+          <li>Pick <b>5 stocks</b> from 15 provided</li>
+          <li>Rank <b>Top 3</b> exactly (🥇🥈🥉)</li>
+          <li>Performance based on <b>weekly movement</b></li>
+          <li>100% <b>skill-based</b> contest</li>
+        </ul>
+        <p><b>Prize:</b> ₹25,000<br><b>Entry:</b> Free</p>
+      </div>
 
-  <div class="card">
-    <h3 id="rankingTitle">📊 Current Week Live Ranking (15 Stocks)</h3>
-    <table>
-      <thead>
-        <tr><th>#</th><th>Stock</th><th id="pctHeader"></th></tr>
-      </thead>
-      <tbody id="liveRanking">
-        <tr><td colspan="3">Loading…</td></tr>
-      </tbody>
-    </table>
-  </div>
-</div>
+      <div class="card">
+        <h3>⚡ Daily Skill Challenge</h3>
+        <ul>
+          <li>Pick <b>5 stocks</b> from 10 provided</li>
+          <li>Rank <b>Top 3</b> exactly</li>
+          <li>Performance based on <b>same-day movement</b></li>
+          <li>100% <b>skill-based</b> contest</li>
+        </ul>
+        <p><b>Prize:</b> ₹10,000<br><b>Entry:</b> Free</p>
+      </div>
 
-<!-- RIGHT -->
-<div class="right-panel">
+    </div>
 
-<!-- STEP 1 -->
-<section id="stockPage" style="display:block">
-<div class="card">
-<div class="step">STEP 1 / 5</div>
-<h2 id="selectTitle">Select 5 Stocks</h2>
-<div class="grid" id="stockList"></div>
-<p>Selected <b><span id="selectedCount">0</span>/5</b></p>
-<div class="error" id="stockError"></div>
-<button onclick="goToRanking()">Continue</button>
-</div>
-</section>
+    <!-- RIGHT : ACTION -->
+    <div>
 
-<!-- STEP 2 -->
-<section id="rankPage">
-<div class="card">
-<div class="step">STEP 2 / 5</div>
-<h2>Rank Top 3</h2>
-<select id="gold"><option value="">🥇 Gold</option></select>
-<select id="silver"><option value="">🥈 Silver</option></select>
-<select id="bronze"><option value="">🥉 Bronze</option></select>
-<div class="error" id="rankError"></div>
-<button onclick="goToConfirm()">Continue</button>
-</div>
-</section>
+      <div class="card">
+        <h3>🎮 Choose a Challenge</h3>
 
-<!-- STEP 3 -->
-<section id="confirmPage">
-<div class="card">
-<div class="step">STEP 3 / 5</div>
-<h2>Confirm Prediction</h2>
-<p id="confirmStocks"></p>
-<p id="confirmRank"></p>
-<button onclick="handleAfterRanking()">Continue</button>
-</div>
-</section>
+        <div class="play-box">
+          <a href="play.html?mode=weekly" class="play-btn play-weekly">
+            ▶ Play Weekly Challenge
+          </a>
 
-<!-- STEP 4 -->
-<!-- <section id="registerPage">
-<div class="card">
-<div class="step">STEP 4 / 5</div>
-<h2>Your Details</h2>
-<div id="userInfo" style="font-size:13px;color:#16a34a;margin-bottom:8px;"></div>
-<input id="regName" placeholder="Name">
-<input id="regEmail" placeholder="Email">
-<input id="regPhone" placeholder="Phone">
-<label>
-<input type="checkbox" id="tcCheck">
-I accept <span style="color:#2563eb;cursor:pointer" onclick="openTC()">Terms & Conditions</span>
-</label>
-<div class="error" id="regError"></div>
-<button onclick="submitPrediction()">Submit</button>
-</div>
-</section>  -->
+          <a href="play.html?mode=daily" class="play-btn play-daily">
+            ⚡ Play Daily Challenge
+          </a>
+        </div>
 
-<!-- STEP 5 -->
-<section id="successPage">
-<div class="card">
-<h2>✅ Submitted</h2>
-<p>Results will be declared on <b>Friday at 8:00 PM</b>.<br>
-A submission confirmation email has been sent to your <b>registered email address</b>.
-</p>
-<button class="secondary" onclick="location.reload()">Home</button>
-</div>
-</section>
+        <div class="note">
+          You can play both challenges independently.
+        </div>
+      </div>
 
-</div>
-</div>
-</div>
-
-<!-- T&C MODAL -->
-<div id="tcModal"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);
-            z-index:9999;align-items:center;justify-content:center">
-
-  <div style="
-    background:#fff;
-    padding:20px;
-    border-radius:16px;
-    max-width:520px;
-    width:90%;
-    max-height:80vh;
-    overflow-y:auto;
-    box-shadow:0 20px 40px rgba(0,0,0,.2);
-  ">
-
-    <h3 style="margin-top:0">Terms & Conditions</h3>
-
-<p style="font-size:13px;line-height:1.6;color:#374151">
-
-<b>Nature of Contest</b><br>
-• This is a <b>skill-based weekly stock prediction game</b>, not gambling.<br>
-• Participation is <b>completely free</b>.<br><br>
-
-<b>How the Game Works</b><br>
-• Users select <b>exactly 5 stocks</b> from the weekly provided list.<br>
-• Users must rank <b>Top 3 stocks in exact order</b>:<br>
-&nbsp;&nbsp;🥇 Gold<br>
-&nbsp;&nbsp;🥈 Silver<br>
-&nbsp;&nbsp;🥉 Bronze<br>
-• Rankings are calculated strictly using <b>weekly stock performance</b>.<br><br>
-
-<b>Performance Calculation</b><br>
-• Weekly performance is calculated using <b>Friday Close vs next Friday Close prices</b>.<br>
-• Results are declared after <b>Friday market close</b> based on final available data.<br><br>
-
-<b>Submission Confirmation (Important)</b><br>
-• After successful submission, a <b>confirmation email</b> is sent to the registered email ID.<br>
-• This email acts as <b>proof of participation</b> and is required in case you are a winner.<br>
-• If you do not receive the confirmation email:<br>
-&nbsp;&nbsp;– Try submitting again carefully.<br>
-&nbsp;&nbsp;– If the issue persists, contact us at <b>equityskill@gmail.com</b>.<br><br>
-
-<b>Participation Rules</b><br>
-• Only <b>one entry per user per week</b> is allowed.<br>
-• One <b>email ID + phone number</b> = one participation.<br>
-• Multiple entries using the same details are <b>not permitted</b>.<br>
-• Participants must be <b>18 years or older</b>.<br><br>
-
-<b>Winner Rules</b><br>
-• Selected <b>Top 5 stocks must match exactly</b> with actual Top 5 performers
-(order does <b>not</b> matter for Top 5).<br>
-• <b>Top 3 ranking must match exactly</b>
-(order <b>matters</b> for Gold, Silver, Bronze).<br>
-• If no user matches the criteria, <b>no winner is declared</b>.<br>
-• If multiple users match, <b>multiple winners may be declared</b> and the prize may be <b>split</b>.<br><br>
-
-<b>Contest Control</b><br>
-• The stock list is <b>fixed once the contest starts</b>.<br>
-• Prices are <b>locked after result calculation</b>.<br>
-• EquitySkill reserves the right to modify, suspend, or cancel the contest due to
-technical issues, market anomalies, or unforeseen circumstances.<br><br>
-
-<b>Disclaimer</b><br>
-• <b>No investment advice</b> is provided.<br>
-• Daily prices and rankings are shown for <b>informational and engagement purposes only</b>.<br>
-• EquitySkill is <b>not responsible</b> for any financial decisions made by users.
-
-</p>
-
-
-    <button class="secondary"
-            style="margin-top:14px;width:100%"
-            onclick="closeTC()">Close</button>
+    </div>
 
   </div>
 </div>
-
-<!-- MOBILE SLIDE MENU -->
-<div id="mobileMenu" class="mobile-menu">
-  <div class="menu-header">
-    <span>Menu</span>
-    <button onclick="closeMenu()">✕</button>
-  </div>
-
-  <a href="results.html">📊 Results</a>
-  <a href="dashboard.html">📊 My Dashboard</a>
-</div>
-
-<script>
-/* ================= CONFIG ================= */
-const WEB_APP_URL = CONFIG.WEB_APP_URL;
-let user = null;
-
-
-function handleAfterRanking(){
-  user = JSON.parse(localStorage.getItem("user"));
-
-  if(!user){
-    // ❌ Guest → login required
-    alert("Please login or signup to continue");
-    location.href = "login.html";
-    return;
-  }
-
-  // ✅ Logged-in user → directly submit
-  submitPrediction();
-}
-
-let STOCKS = [];
-let CURRENT_WEEK = "";
-let selectedStocks = [];
-let topRank = {};
-
-/* ================= INIT ================= */
-window.onload = () => {
-  loadInit();
-  loadLiveRanking();
-};
-
-
-/* ================= PAGE SWITCH ================= */
-function show(id){
-  document.querySelectorAll("section").forEach(s => s.style.display = "none");
-  const el = document.getElementById(id);
-  if(el) el.style.display = "block";
-}
-
-/* ================= LOAD INIT DATA ================= */
-function loadInit() {
-  fetch(WEB_APP_URL + "?action=init")
-    .then(r => r.json())
-    .then(d => {
-
-      // ✅ Week & stock data
-      CURRENT_WEEK = d.week || "";
-      STOCKS = d.stocks || [];
-
-      // ✅ Update "Select 5 Stocks – Week XXXX"
-      const title = document.getElementById("selectTitle");
-      if (title && CURRENT_WEEK) {
-        title.innerText = `Select 5 Stocks – Week ${CURRENT_WEEK}`;
-      }
-
-      // ✅ Contest status badge
-      const badge = document.getElementById("contestStatus");
-      if (badge) {
-        if (d.entryOpen === "YES") {
-          badge.innerText = "● Contest Open";
-          badge.style.background = "#dcfce7";
-          badge.style.color = "#166534";
-        } else {
-          badge.innerText = "● Contest Closed";
-          badge.style.background = "#fee2e2";
-          badge.style.color = "#991b1b";
-        }
-      }
-
-      // ✅ Render stocks list
-      renderStocks();
-    })
-    .catch(() => {
-      alert("Unable to load contest data. Refresh page.");
-    });
-}
-
-/* ================= STOCK SELECTION ================= */
-function renderStocks(){
-  const box = document.getElementById("stockList");
-  if(!box) return;
-
-  box.innerHTML = "";
-  selectedStocks = [];
-  selectedCount.innerText = "0";
-
-  STOCKS.forEach(stock => {
-    const div = document.createElement("div");
-    div.className = "stock";
-    div.innerText = stock;
-    div.onclick = () => toggleStock(stock, div);
-    box.appendChild(div);
-  });
-}
-
-function toggleStock(stock, el){
-  if(selectedStocks.includes(stock)){
-    selectedStocks = selectedStocks.filter(s => s !== stock);
-    el.classList.remove("selected");
-  }
-  else if(selectedStocks.length < 5){
-    selectedStocks.push(stock);
-    el.classList.add("selected");
-  }
-  selectedCount.innerText = selectedStocks.length;
-}
-
-/* ================= GO TO RANK ================= */
-function goToRanking(){
-  if(selectedStocks.length !== 5){
-    stockError.innerText = "Select exactly 5 stocks";
-    return;
-  }
-  stockError.innerText = "";
-
-  ["gold","silver","bronze"].forEach(id => {
-    const sel = document.getElementById(id);
-    sel.innerHTML = `<option value="">Select</option>`;
-    selectedStocks.forEach(s =>
-      sel.innerHTML += `<option value="${s}">${s}</option>`
-    );
-  });
-
-  show("rankPage");
-}
-
-/* ================= CONFIRM ================= */
-function goToConfirm(){
-  const g = gold.value;
-  const s = silver.value;
-  const b = bronze.value;
-
-  if(!g || !s || !b || new Set([g,s,b]).size !== 3){
-    rankError.innerText = "Choose 3 unique stocks";
-    return;
-  }
-  rankError.innerText = "";
-
-  topRank = { gold:g, silver:s, bronze:b };
-
-  confirmStocks.innerText = "Stocks: " + selectedStocks.join(", ");
-  confirmRank.innerText = `🥇 ${g}  🥈 ${s}  🥉 ${b}`;
-
-  show("confirmPage");
-}
-
-/* ================= SUBMIT ================= */
-function submitPrediction(){
-  const user = JSON.parse(localStorage.getItem("user"));
-  if(!user){
-    alert("Please login to submit");
-    return;
-  }
-
-  fetch(WEB_APP_URL, {
-    method: "POST",
-    mode: "no-cors",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      week: CURRENT_WEEK,
-      username: user.username,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      selected5: selectedStocks,
-      top3: topRank
-    })
-  });
-
-  show("successPage");
-}
-
-
-
-
-
-
-
-
-/* ================= LIVE RANKING ================= */
-function loadLiveRanking(){
-  fetch(WEB_APP_URL + "?action=homeRanking")
-    .then(r => r.json())
-    .then(d => {
-      liveRanking.innerHTML = "";
-
-
-      // 🔄 Change heading based on contest state
-if (d.mode === "LAST_CONTEST") {
-  document.getElementById("rankingTitle").innerText =
-    `📊 Last Contest Final Ranking – ${d.week} (15 Stocks)`;
-  document.getElementById("pctHeader").innerText =
-    "Final %";
-} else {
-  document.getElementById("rankingTitle").innerText =
-    `📊 Current Week Live Ranking – ${d.week} (15 Stocks)`;
-  document.getElementById("pctHeader").innerText =
-    "% Change";
-}
-
-
- liveRanking.innerHTML = "";
-
-     // CASE 1: LIVE ranking (Mon–Fri)
-if (d.mode !== "LAST_CONTEST") {
-  d.ranking.forEach((r,i) => {
-    addRow(r.stock, r.pct, i);
-  });
-  return;
-}
-
-// CASE 2: LAST contest ranking (Weekend)
-d.ranking.forEach((r,i) => {
-  addRow(r.stock, r.pct, i);
-});
-    });
-}
-
-function addRow(stock, pct, i){
-  let icon =
-    i===0?"🥇":
-    i===1?"🥈":
-    i===2?"🥉":
-    (i<5?"🔥":"");
-
-  liveRanking.innerHTML +=
-  `<tr class="${i<5?"top5":""} ${i===5?"sep":""}">
-    <td>${i+1}</td>
-    <td>${icon} ${stock}</td>
-   <td>${pct != null ? pct + "%" : "-"}</td>
-
-  </tr>`;
-}
-
-
-/* ================= TERMS MODAL ================= */
-function openTC(){
-  document.getElementById("tcModal").style.display = "flex";
-}
-function closeTC(){
-  document.getElementById("tcModal").style.display = "none";
-}
-
-
-function openMenu(){
-  document.getElementById("mobileMenu").classList.add("open");
-}
-function closeMenu(){
-  document.getElementById("mobileMenu").classList.remove("open");
-}
-
-</script>
-
 
 </body>
 </html>

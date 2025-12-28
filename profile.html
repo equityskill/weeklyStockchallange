@@ -1,58 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>User Profile – EquitySkill</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EquitySkill – User Profile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+:root{
+  --primary:#2563eb;
+  --bg:#f5f7fb;
+  --card:#ffffff;
+  --border:#e5e7eb;
+  --text:#1f2937;
+  --muted:#6b7280;
+}
+
+*{box-sizing:border-box}
+
 body{
   margin:0;
-  font-family:Inter,Arial;
-  background:#f5f7fb;
+  font-family:Inter,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
 }
+
 .container{
-  max-width:600px;
+  max-width:720px;
   margin:30px auto;
-  padding:20px;
+  padding:16px;
 }
-.card{
-  background:#fff;
-  border-radius:16px;
-  padding:22px;
-  box-shadow:0 10px 30px rgba(0,0,0,.08);
-}
-h2{margin-top:0}
-.stat{
-  display:flex;
-  justify-content:space-between;
-  padding:10px 0;
-  border-bottom:1px solid #eee;
-}
-.stat:last-child{border:none}
-.list li{
-  margin-bottom:6px;
-}
+
+/* HEADER */
 .header{
   display:flex;
   justify-content:space-between;
+  align-items:center;
+  margin-bottom:16px;
+}
+.brand{
+  font-size:22px;
+  font-weight:800;
+  color:var(--primary);
+}
+.header a{
+  text-decoration:none;
+  font-weight:600;
+  color:var(--primary);
+}
+
+/* CARD */
+.card{
+  background:var(--card);
+  border-radius:18px;
+  padding:18px;
+  box-shadow:0 14px 40px rgba(0,0,0,.08);
   margin-bottom:16px;
 }
 
-.nav-btn{
-  padding:8px 14px;
-  border-radius:10px;
-  border:none;
-  cursor:pointer;
-  font-weight:600;
-  background:#e5e7eb;
+h2,h3{
+  margin:0 0 10px;
+}
+p{
+  margin:6px 0;
+  font-size:14px;
+  color:var(--muted);
 }
 
-.nav-btn.primary{
+/* STATS */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+}
+.stat{
+  background:#f1f5f9;
+  border-radius:14px;
+  padding:14px;
+  text-align:center;
+}
+.stat h3{
+  margin:0;
+  font-size:22px;
+}
+.stat p{
+  margin:4px 0 0;
+  font-size:12px;
+}
+
+/* SCORE LIST */
+.list{
+  list-style:none;
+  padding:0;
+  margin:0;
+}
+.list li{
+  padding:10px;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+}
+
+.badge{
+  font-size:12px;
+  font-weight:700;
+  padding:4px 10px;
+  border-radius:999px;
+  background:#e0e7ff;
+  color:#3730a3;
+}
+
+.me-badge{
   background:#2563eb;
   color:#fff;
 }
-
 </style>
 
 <script src="config.js"></script>
@@ -61,61 +121,110 @@ h2{margin-top:0}
 <body>
 
 <div class="container">
-    <div class="header">
-  <button class="nav-btn" onclick="goBack()">⬅ Back</button>
-  <button class="nav-btn primary" onclick="goHome()">🏠 Dashboard</button>
-</div>
 
-  <div class="card">
-
-    <h2 id="username">User</h2>
-
-    <div class="stat"><b>Total Games</b><span id="totalGames">0</span></div>
-    <div class="stat"><b>Best Score</b><span id="bestScore">0</span></div>
-    <div class="stat"><b>Average Score</b><span id="avgScore">0</span></div>
-
-    <h3 style="margin-top:20px;">Score History</h3>
-    <ul id="history" class="list"></ul>
-
+  <!-- HEADER -->
+  <div class="header">
+    <div class="brand">👤 User Profile</div>
+    <a href="leaderboard.html">← Back</a>
   </div>
+
+  <!-- BASIC INFO -->
+  <div class="card">
+    <h2 id="usernameText">@username</h2>
+    <p id="modeText">—</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="card">
+    <h3>Performance Stats</h3>
+    <div class="stats">
+      <div class="stat">
+        <h3 id="totalGames">—</h3>
+        <p>Games Played</p>
+      </div>
+      <div class="stat">
+        <h3 id="bestScore">—</h3>
+        <p>Best Score</p>
+      </div>
+      <div class="stat">
+        <h3 id="avgScore">—</h3>
+        <p>Average Score</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCORE HISTORY -->
+  <div class="card">
+    <h3>Score History</h3>
+    <ul class="list" id="scoreList">
+      <li>Loading…</li>
+    </ul>
+  </div>
+
 </div>
 
 <script>
-const API = CONFIG.WEB_APP_URL;
+/* ================= CONFIG ================= */
+const MODE = getGameMode();      // daily | weekly
+const API  = getAPI();
 
-// read username from URL
+/* ================= USER ================= */
 const params = new URLSearchParams(window.location.search);
-const username = params.get("user");
+const profileUser = params.get("user");
 
-if(!username){
-  alert("Invalid user");
+if(!profileUser){
+  alert("User not specified");
   location.href = "leaderboard.html";
 }
 
-document.getElementById("username").innerText = "@" + username;
+const loggedUser = JSON.parse(localStorage.getItem("user"));
 
-fetch(`${API}?action=userProfile&username=${username}`)
+document.getElementById("usernameText").innerHTML =
+  `@${profileUser}
+   ${loggedUser && loggedUser.username === profileUser
+      ? '<span class="badge me-badge">YOU</span>'
+      : ''}`;
+
+document.getElementById("modeText").innerText =
+  MODE === "daily"
+    ? "📅 Daily Challenge Profile"
+    : "🏆 Weekly Challenge Profile";
+
+/* ================= LOAD PROFILE ================= */
+fetch(`${API}?action=myScores&username=${encodeURIComponent(profileUser)}`)
   .then(r => r.json())
   .then(d => {
 
-    document.getElementById("totalGames").innerText = d.totalGames;
-    document.getElementById("bestScore").innerText = d.bestScore;
-    document.getElementById("avgScore").innerText = d.avgScore;
+    const totalGamesEl = document.getElementById("totalGames");
+    const bestScoreEl  = document.getElementById("bestScore");
+    const avgScoreEl   = document.getElementById("avgScore");
+    const ul           = document.getElementById("scoreList");
 
-    const list = document.getElementById("history");
-    list.innerHTML = "";
+    // ❌ No data case
+    if (d.status !== "FOUND") {
+      totalGamesEl.innerText = 0;
+      bestScoreEl.innerText  = 0;
+      avgScoreEl.innerText   = 0;
+      ul.innerHTML = `<li>No games played yet</li>`;
+      return;
+    }
 
-    d.scores.forEach(s=>{
-      list.innerHTML += `<li>${s.week} → ${s.score} pts</li>`;
-    });
+    // ✅ Correct data
+    totalGamesEl.innerText = d.totalGames;
+    bestScoreEl.innerText  = d.bestScore;
+    avgScoreEl.innerText   = d.avgScore;
+
+    // ℹ️ Score history not implemented yet
+    ul.innerHTML = `
+      <li>
+        Score history will be available soon
+      </li>
+    `;
+  })
+  .catch(() => {
+    document.getElementById("scoreList").innerHTML =
+      `<li>Error loading profile</li>`;
   });
-  function goBack(){
-  history.back(); // previous page (leaderboard)
-}
-
-function goHome(){
-  location.href = "dashboard.html";
-}
 
 </script>
 
