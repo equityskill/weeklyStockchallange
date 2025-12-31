@@ -6,13 +6,13 @@ const CONFIG = {
 
   // ===== WEB APPS =====
   DAILY_WEB_APP_URL:
-    "https://script.google.com/macros/s/AKfycby-e2iA1vMZWP5TDrZm1TO4jRZSrTohI-S4OeU87wH665gfE2rMuJSbio6Sgahh9Ppi/exec",
+    "https://script.google.com/macros/s/AKfycbz-Hkj_fyjG-kxo-phJnOQpGLRIGS636gBPX3lSC1A1tIq_Xu5SzCJ6ll9YURWWIIXs/exec",
 
   WEEKLY_WEB_APP_URL:
-    "https://script.google.com/macros/s/AKfycbzNYJN-zqKGRMeXYkhF2L5ODnHo9rnBrKm4nAImOkpodAEyqnF4xoQ6bGR0T_UZVKeI/exec",
+    "https://script.google.com/macros/s/AKfycbx6FvC2mg66d5vXPvz7cpT0KXNKKejPN7bCUmRWZfJwbvGMzcuwD2OUtqSSfFk80SHr/exec",
 
   USER_WEB_APP_URL:
-  "https://script.google.com/macros/s/AKfycbxTYoXjKLVaI4PTNZQMGQR_uZ9k9gGIlgRCNIqotskg0dKwpWOlt_OaIr34ue-HLUrW/exec",
+  "https://script.google.com/macros/s/AKfycbwtT10NEXOgkHoVHruIyMjDbFDFRLhuJXwZeMwn2fY1hgsNO6bArwueFUbRPrAJZNqs/exec",
   // ===== DEFAULT MODE =====
   // "weekly" | "daily"
   DEFAULT_MODE: "weekly",

@@ -68,6 +68,65 @@ button{
   color:#2563eb;
   margin-bottom:10px;
 }
+
+.login-nav{
+    display:flex;
+  justify-content:flex-end;
+  margin-bottom:8px;
+}
+
+.nav-btn{
+  border:none;
+  background:#f1f5f9;
+  padding:6px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  font-size:14px;
+  font-weight:600;
+}
+
+.nav-btn:hover{
+  background:#e5e7eb;
+}
+
+.nav-btn.home{
+    background:#2563eb;
+  color:#fff;
+  border:none;
+  padding:6px 12px;   /* 👈 chhota size */
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+
+}
+
+.login-top{
+  display:flex;
+  justify-content:flex-end;
+  margin-bottom:10px;
+}
+
+.home-btn{
+  background:#2563eb;
+  color:#fff;
+  border:none;
+  padding:6px 12px;   /* 👈 chhota size */
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
+  width:auto; 
+}
+
+.home-btn:hover{
+  background:#1d4ed8;
+}
+
+
+
+
+
 </style>
 
 <script src="config.js"></script>
@@ -75,8 +134,15 @@ button{
 
 <body>
 
+  
 <div class="container">
   <div class="card">
+
+   <div class="login-top">
+  <button class="home-btn" onclick="goHome()">🏠 Home</button>
+</div>
+
+
 
     <div class="mode" id="modeText">—</div>
 
@@ -104,9 +170,9 @@ const USER_API = CONFIG.USER_WEB_APP_URL;
 
 /* ================= UI ================= */
 document.getElementById("modeText").innerText =
-  MODE === "daily"
-    ? "📅 Daily Challenge Login"
-    : "🏆 Weekly Challenge Login";
+  document.getElementById("modeText").innerText =
+  "🔐 EquitySkill Login";
+
 
 /* ================= LOGIN ================= */
 function login(){
@@ -131,14 +197,27 @@ const p = document.getElementById("phone").value.trim();
       localStorage.setItem("user", JSON.stringify(d.user));
 
       // Redirect based on mode
-      location.href = MODE === "daily"
-        ? "index.html?mode=daily"
-        : "index.html?mode=weekly";
+      const redirect =
+  new URLSearchParams(window.location.search).get("redirect");
+
+location.href = redirect
+  ? decodeURIComponent(redirect)
+  : "index.html";
+
     })
     .catch(()=>{
       error.innerText = "Login failed. Try again.";
     });
 }
+
+function goBack(){
+  history.back();
+}
+
+function goHome(){
+  location.href = "index.html"; // agar home ka naam index.html hai
+}
+
 </script>
 
 </body>

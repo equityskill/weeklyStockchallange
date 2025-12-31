@@ -20,22 +20,53 @@ body{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  margin-bottom:25px;
+  padding:14px 20px;
+  background:#fff;
+  border-bottom:1px solid #e5e7eb;
 }
+
 .brand{
-  font-size:22px;
+  font-size:18px;
   font-weight:800;
   color:#2563eb;
 }
+
+.header-actions{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+/* Home button */
+.home-btn{
+  background:#2563eb;
+  color:#fff;
+  padding:8px 14px;
+  border-radius:10px;
+  text-decoration:none;
+  font-weight:600;
+  font-size:14px;
+}
+
+.home-btn:hover{
+  opacity:0.9;
+}
+
+/* Logout button */
 .logout{
   background:#ef4444;
   color:#fff;
   border:none;
-  padding:10px 14px;
+  padding:8px 14px;
   border-radius:10px;
   font-weight:600;
   cursor:pointer;
 }
+
+.logout:hover{
+  opacity:0.9;
+}
+
 .card{
   background:#fff;
   border-radius:16px;
@@ -212,6 +243,44 @@ body{
   transform:translateY(-2px);
 }
 
+.stats-wrapper{
+  position:relative;
+  overflow:hidden;
+}
+
+.stats-panel{
+  transition:all .35s ease;
+  opacity:0;
+  transform:translateX(40px);
+  position:absolute;
+  width:100%;
+  pointer-events:none;
+}
+
+.stats-panel.active{
+  opacity:1;
+  transform:translateX(0);
+  position:relative;
+  pointer-events:auto;
+}
+
+/* ===== MOBILE STATS GRID FIX ===== */
+@media (max-width: 600px) {
+
+  .stats{
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat h3{
+    font-size: 20px;
+  }
+
+  .stat p{
+    font-size: 12px;
+  }
+}
+
+
 </style>
 </head>
 
@@ -220,10 +289,15 @@ body{
 <div class="container">
 
   <!-- HEADER -->
-  <div class="header">
-    <div class="brand">EquitySkill</div>
+<div class="header">
+  <div class="brand">EquitySkill</div>
+
+  <div class="header-actions">
+    <a href="index.html" class="home-btn">Home</a>
     <button class="logout" onclick="logout()">Logout</button>
   </div>
+</div>
+
 
   <!-- WELCOME -->
   <div class="card">
@@ -266,25 +340,50 @@ body{
 </div>
 
 
-    <div class="stats">
-      <div class="stat">
-        <h3 id="totalGames">—</h3>
-        <p>Contests Played</p>
-      </div>
-      <div class="stat">
-        <h3 id="bestScore">—</h3>
-        <p>Best Score</p>
-      </div>
-      <div class="stat">
-        <h3 id="avgScore">—</h3>
-        <p>Average Score</p>
-      </div>
-      <div class="stat">
-        <h3 id="weeklyRank">—</h3>
-<p>Rank (Weekly)</p>
+    <div class="stats-wrapper">
 
-      </div>
+  <!-- WEEKLY CARDS -->
+  <div class="stats stats-panel active" id="weeklyPanel">
+    <div class="stat">
+      <h3 id="weekly_totalGames">—</h3>
+      <p>Contests Played</p>
     </div>
+    <div class="stat">
+      <h3 id="weekly_bestScore">—</h3>
+      <p>Best Score</p>
+    </div>
+    <div class="stat">
+      <h3 id="weekly_avgScore">—</h3>
+      <p>Average Score</p>
+    </div>
+    <div class="stat">
+      <h3 id="weekly_rank">—</h3>
+      <p>Global Rank</p>
+    </div>
+  </div>
+
+  <!-- DAILY CARDS -->
+  <div class="stats stats-panel" id="dailyPanel">
+    <div class="stat">
+      <h3 id="daily_totalGames">—</h3>
+      <p>Contests Played</p>
+    </div>
+    <div class="stat">
+      <h3 id="daily_bestScore">—</h3>
+      <p>Best Score</p>
+    </div>
+    <div class="stat">
+      <h3 id="daily_avgScore">—</h3>
+      <p>Average Score</p>
+    </div>
+    <div class="stat">
+      <h3 id="daily_rank">—</h3>
+      <p>Global Rank</p>
+    </div>
+  </div>
+
+</div>
+
   </div>
 
   <!-- ACTIONS -->
@@ -331,7 +430,9 @@ if(!user){
 
 // ===== MODE & API =====
 
-const API = getAPI();                // correct webapp
+const WEEKLY_API = "https://script.google.com/macros/s/AKfycbx6FvC2mg66d5vXPvz7cpT0KXNKKejPN7bCUmRWZfJwbvGMzcuwD2OUtqSSfFk80SHr/exec";
+const DAILY_API  = "https://script.google.com/macros/s/AKfycbz-Hkj_fyjG-kxo-phJnOQpGLRIGS636gBPX3lSC1A1tIq_Xu5SzCJ6ll9YURWWIIXs/exec"; 
+
 const USER_API = "https://script.google.com/macros/s/AKfycbxTYoXjKLVaI4PTNZQMGQR_uZ9k9gGIlgRCNIqotskg0dKwpWOlt_OaIr34ue-HLUrW/exec"
 
 // ===== UI TEXT =====
@@ -345,7 +446,7 @@ document.getElementById("profilePhone").innerText = user.phone || "—";
 
 
 // ===== LOAD DASHBOARD STATS =====
-fetch(`${API}?action=myScores&username=${encodeURIComponent(user.username)}`)
+fetch(`${WEEKLY_API}?action=myScores&username=${encodeURIComponent(user.username)}`)
   .then(r => r.json())
   .then(d => {
     if (d.status !== "FOUND") return;
@@ -418,59 +519,113 @@ function saveProfile(){
 
 function loadStats(mode, btn){
 
+  // tab active
   document.querySelectorAll(".stats-tabs .tab")
     .forEach(b => b.classList.remove("active"));
-
   btn.classList.add("active");
 
+  // panel swap
+  document.getElementById("weeklyPanel").classList.remove("active");
+  document.getElementById("dailyPanel").classList.remove("active");
+
   if(mode === "weekly"){
+    document.getElementById("weeklyPanel").classList.add("active");
     loadWeeklyStats();
     loadWeeklyRank();
   }else{
+    document.getElementById("dailyPanel").classList.add("active");
     loadDailyStats();
   }
 }
 
-function loadWeeklyStats(){
-  fetch(`${API}?action=myScores&username=${encodeURIComponent(user.username)}`)
-    .then(r=>r.json())
-    .then(d=>{
-      if(d.status !== "FOUND") return;
 
-      document.getElementById("totalGames").innerText = d.totalGames;
-      document.getElementById("bestScore").innerText = d.bestScore;
-      document.getElementById("avgScore").innerText =
+function loadWeeklyStats(){
+
+  fetch(`${WEEKLY_API}?action=myScores&username=${encodeURIComponent(user.username)}`)
+    .then(r => r.json())
+    .then(d => {
+
+      if(d.status !== "FOUND"){
+        document.getElementById("weekly_totalGames").innerText = "—";
+        document.getElementById("weekly_bestScore").innerText = "—";
+        document.getElementById("weekly_avgScore").innerText = "—";
+        return;
+      }
+
+      document.getElementById("weekly_totalGames").innerText = d.totalGames;
+      document.getElementById("weekly_bestScore").innerText = d.bestScore;
+      document.getElementById("weekly_avgScore").innerText =
         (typeof d.avgScore === "number") ? d.avgScore : "—";
     });
 }
 
 
+
+
 function loadWeeklyRank(){
 
-  fetch(`${API}?action=myWeeklyRank&username=${encodeURIComponent(user.username)}`)
+  fetch(`${WEEKLY_API}?action=myWeeklyRank&username=${encodeURIComponent(user.username)}`)
     .then(r => r.json())
     .then(d => {
 
-      const rankEl = document.getElementById("weeklyRank");
+      const el = document.getElementById("weekly_rank");
 
-      if (!rankEl) return; // safety
-
-      if (d.status === "FOUND") {
-        rankEl.innerText = `${d.rank} / ${d.totalPlayers}`;
-      }
-      else if (d.status === "NOT_PLAYED") {
-        rankEl.innerText = "Not played";
-      }
-      else {
-        rankEl.innerText = "—";
+      if(d.status === "FOUND"){
+        el.innerText = `${d.rank} / ${d.totalPlayers}`;
+      } else {
+        el.innerText = "—";
       }
     });
 }
 
 
-// Initial load (default = weekly)
+function loadDailyStats(){
+
+  // weekly rank hide / reset
+  document.getElementById("weekly_rank").innerText = "—";
+
+  // ---------- DAILY SCORES ----------
+  fetch(`${DAILY_API}?action=myScores&username=${encodeURIComponent(user.username)}`)
+    .then(r => r.json())
+    .then(d => {
+
+      if(d.status !== "FOUND"){
+        document.getElementById("daily_totalGames").innerText = "—";
+        document.getElementById("daily_bestScore").innerText = "—";
+        document.getElementById("daily_avgScore").innerText = "—";
+        document.getElementById("daily_rank").innerText = "—";
+        return;
+      }
+
+      document.getElementById("daily_totalGames").innerText = d.totalGames;
+      document.getElementById("daily_bestScore").innerText = d.bestScore;
+      document.getElementById("daily_avgScore").innerText =
+        (typeof d.avgScore === "number") ? d.avgScore : "—";
+    });
+
+  // ---------- DAILY GLOBAL RANK ----------
+  fetch(`${DAILY_API}?action=myDailyRank&username=${encodeURIComponent(user.username)}`)
+    .then(r => r.json())
+    .then(d => {
+
+      if(d.status === "FOUND"){
+        document.getElementById("daily_rank").innerText =
+          `${d.rank} / ${d.totalPlayers}`;
+      } else {
+        document.getElementById("daily_rank").innerText = "—";
+      }
+    });
+}
+
+
+
+
+
+
 loadWeeklyStats();
 loadWeeklyRank();
+
+
 
 </script>
 

@@ -87,6 +87,13 @@ button{
   color:#fff;border:none;border-radius:12px;font-weight:700;cursor:pointer
 }
 .error{color:#dc2626;font-size:13px}
+
+.disabled-card {
+  opacity: 0.4;
+  pointer-events: none;
+  filter: grayscale(1);
+}
+
 </style>
 
 <script src="config.js"></script>
@@ -125,13 +132,21 @@ button{
 
 <!-- STEP 1 -->
 <div class="card" id="step1">
-  <h3>Select 5 Stocks</h3>
+  <h3 id="selectionTitle">Select 5 Stocks</h3>
+<p class="note" id="submissionInfo"></p>
+
   <div class="stock-grid" id="stockList"></div>
   <p>Selected <b><span id="count">0</span>/5</b></p>
   <div class="error" id="err"></div>
   <button onclick="goNext()">Continue</button>
 </div>
 
+
+<!-- CLOSED MESSAGE -->
+<div class="card" id="closedMessage" style="display:none">
+  <h3 style="color:#dc2626" id="closedTitle"></h3>
+  <p id="closedTimer" class="note"></p>
+</div>
 <!-- STEP 2 -->
 <div class="card" id="step2" style="display:none">
   <h3>Rank Your Top 3</h3>
@@ -178,6 +193,10 @@ button{
 const MODE = getGameMode();
 const API = getAPI();
 
+/* ===== CONTEST STATUS HANDLING ===== */
+
+
+
 const isEdit =
   new URLSearchParams(window.location.search).get("edit") === "1";
 
@@ -191,19 +210,29 @@ let CURRENT_WEEK="";
 window.onload = () => {
   loadStocks();
   loadRanking();
+  applyContestStatus();      // ✅ ADD THIS
 
   if (isEdit) {
-    preloadSubmission();   // ✅ ADD
+    preloadSubmission();
   }
 };
+
+setInterval(applyContestStatus, 1000); // ⏱ live countdown
+
 
 
 /* LOAD STOCKS */
 function loadStocks(){
  fetch(API+"?action=init").then(r=>r.json()).then(d=>{
   STOCKS=d.stocks||[];
-  CURRENT_WEEK=d.week||"";
-  localStorage.setItem("CURRENT_WEEK",CURRENT_WEEK);
+  if (MODE === "daily") {
+  CURRENT_WEEK = d.day || "";
+} else {
+  CURRENT_WEEK = d.week || "";
+}
+
+localStorage.setItem("CURRENT_WEEK", CURRENT_WEEK);
+
   renderStocks();
  });
 }
@@ -332,14 +361,18 @@ function submitFinal(){
     return;
   }
 
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const week = localStorage.getItem("CURRENT_WEEK");
+ const user = JSON.parse(localStorage.getItem("user") || "{}");
+const mode = getGameMode();
 
-  if(!user.username || !week){
-    alert("Session expired. Please login again.");
-    location.href = "login.html";
-    return;
-  }
+if(!user.username){
+  alert("Please login to continue");
+  location.href =
+  `login.html?mode=${mode}&redirect=${encodeURIComponent(location.href)}`;
+
+  return;
+}
+
+
 
   const top3 = {
     gold: ranking.gold,
@@ -348,18 +381,23 @@ function submitFinal(){
   };
 
   const params = new URLSearchParams({
-    action: "submitEntry",
-    week: week,
-    username: user.username,
-    email: user.email || "",
-    phone: user.phone || "",
-    selected5: JSON.stringify(selected),
-    top3: JSON.stringify(top3)          // ✅ SINGLE FIELD
-  });
+  action: "submitEntry",
+  username: user.username,
+  email: user.email || "",
+  phone: user.phone || "",
+  selected5: JSON.stringify(selected),
+  top3: JSON.stringify(top3)
+});
 
-  fetch(API + "?" + params.toString())
-  .then(r => r.json())
+// 🔑 MODE based key
+if (MODE === "daily") {
+  params.append("day", CURRENT_WEEK);   // daily backend expects "day"
+} else {
+  params.append("week", CURRENT_WEEK);  // weekly backend expects "week"
+}
 
+
+ 
   const btn = document.querySelector("#step2 button");
   btn.disabled = true;
   btn.innerText = "Submitting...";
@@ -386,24 +424,48 @@ function submitFinal(){
 
 /* RANKING */
 function loadRanking(){
- fetch(API+"?action=homeRanking").then(r=>r.json()).then(d=>{
-  rankingTitle.innerText=
-   d.mode==="LAST"?"Previous Week Ranking":
-   MODE==="daily"?"Today's Live Ranking":"Weekly Live Ranking";
+  fetch(API + "?action=homeRanking")
+    .then(r => r.json())
+    .then(d => {
 
-  liveRanking.innerHTML="";
-  (d.ranking||[]).forEach((r,i)=>{
-   let icon=i==0?"🥇":i==1?"🥈":i==2?"🥉":i<5?"🔥":"";
-   liveRanking.innerHTML+=`
-    <tr>
-     <td class="col-rank">${i+1}</td>
-     <td class="col-icon">${icon}</td>
-     <td>${r.stock}</td>
-     <td class="col-pct">${r.pct}%</td>
-    </tr>`;
-  });
- });
+      // 🔑 Decide title properly
+      if (d.mode === "LAST") {
+        // Previous completed week
+        rankingTitle.innerText =
+  MODE === "daily"
+    ? `Previous Day Ranking – ${d.week}`
+    : `Previous Week Ranking – ${d.week}`;
+
+      } else {
+        // Live week
+        const week = localStorage.getItem("CURRENT_WEEK") || d.week || "";
+        rankingTitle.innerText =
+  MODE === "daily"
+    ? `Daily Live Ranking – ${week}`
+    : `Weekly Live Ranking – ${week}`;
+
+      }
+
+      liveRanking.innerHTML = "";
+
+      (d.ranking || []).forEach((r, i) => {
+        let icon =
+          i === 0 ? "🥇" :
+          i === 1 ? "🥈" :
+          i === 2 ? "🥉" :
+          i < 5  ? "🔥" : "";
+
+        liveRanking.innerHTML += `
+          <tr>
+            <td class="col-rank">${i + 1}</td>
+            <td class="col-icon">${icon}</td>
+            <td>${r.stock}</td>
+            <td class="col-pct">${r.pct}%</td>
+          </tr>`;
+      });
+    });
 }
+
 
 function preloadSubmission(){
 
@@ -433,6 +495,69 @@ function preloadSubmission(){
     });
 }
 
+
+
+const STATUS_API = API;
+
+
+function msToTime(ms){
+  const h = Math.floor(ms / (1000*60*60));
+  const m = Math.floor((ms % (1000*60*60)) / (1000*60));
+  const s = Math.floor((ms % (1000*60)) / 1000);
+  return `${h}h ${m}m ${s}s`;
+}
+
+function applyContestStatus(){
+  fetch(`${API}?action=contestStatus`)
+    .then(r => r.json())
+    .then(d => {
+
+      if (document.getElementById("step2").style.display === "block") {
+  return; // user already in step2, don't interfere
+}
+
+      const step1 = document.getElementById("step1");
+      const step2 = document.getElementById("step2");
+      const closed = document.getElementById("closedMessage");
+      const timer = document.getElementById("closedTimer");
+
+      const title = document.getElementById("selectionTitle");
+      const info  = document.getElementById("submissionInfo");
+
+      const week = d.current_week || "";
+
+      if(d.status === "OPEN"){
+        step1.style.display = "block";
+        closed.style.display = "none";
+
+        title.innerText =
+  MODE === "daily"
+    ? `Select 5 Stocks (Today)`
+    : `Select 5 Stocks (${week})`;
+        info.innerText =
+          `⏳ Submission closes in ${msToTime(d.remainingMs)}`;
+
+      } else {
+        step1.style.display = "none";
+        step2.style.display = "none";
+        closed.style.display = "block";
+
+        timer.innerText =
+          `${d.message}: ${msToTime(d.remainingMs)}`;
+      }
+    });
+
+    const closedTitle = document.getElementById("closedTitle");
+closedTitle.innerText =
+  MODE === "daily"
+    ? "⛔ Daily Submission Closed"
+    : "⛔ Weekly Submission Closed";
+
+}
+
+
+applyContestStatus();
+setInterval(applyContestStatus, 1000);
 </script>
 
 </body>

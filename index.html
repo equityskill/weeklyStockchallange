@@ -92,7 +92,8 @@ body{
 
 .layout{
   display:grid;
-  grid-template-columns:1fr 420px;
+  grid-template-columns:520px 520px;
+  justify-content:center;
   gap:30px;
 }
 
@@ -141,6 +142,7 @@ body{
   font-weight:700;
   color:#fff;
   transition:.15s ease;
+  width:100%;
 }
 
 .play-btn:hover{
@@ -157,6 +159,58 @@ body{
   color:var(--muted);
   margin-top:10px;
 }
+
+.tc-link{
+  margin-top:10px;
+  font-size:14px;
+  color:#2563eb;
+  cursor:pointer;
+  text-align:center;
+}
+
+.tc-modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.5);
+  z-index:999;
+}
+
+.tc-content{
+  background:#fff;
+  max-width:500px;
+  margin:60px auto;
+  padding:20px;
+  border-radius:14px;
+  max-height:80vh;
+  overflow:auto;
+}
+
+.tc-close{
+  float:right;
+  font-size:22px;
+  cursor:pointer;
+}
+
+
+.btn-green:hover{
+  transform:translateY(-1px);
+  opacity:0.95;
+}
+
+/* ===== T&C LINK FIX ===== */
+.tc-link{
+  font-size:14px;
+  color:var(--primary);
+  font-weight:600;
+  text-decoration:none;
+}
+
+.tc-link:hover{
+  text-decoration:underline;
+}
+
+
 </style>
 </head>
 
@@ -184,55 +238,301 @@ body{
     <!-- LEFT : INFO -->
     <div>
 
-      <div class="card">
-        <h3>🏆 Weekly Skill Challenge</h3>
-        <ul>
-          <li>Pick <b>5 stocks</b> from 15 provided</li>
-          <li>Rank <b>Top 3</b> exactly (🥇🥈🥉)</li>
-          <li>Performance based on <b>weekly movement</b></li>
-          <li>100% <b>skill-based</b> contest</li>
-        </ul>
-        <p><b>Prize:</b> ₹25,000<br><b>Entry:</b> Free</p>
-      </div>
+  <div class="card">
+  <h3>Weekly Stock Prediction Game</h3>
 
-      <div class="card">
-        <h3>⚡ Daily Skill Challenge</h3>
-        <ul>
-          <li>Pick <b>5 stocks</b> from 10 provided</li>
-          <li>Rank <b>Top 3</b> exactly</li>
-          <li>Performance based on <b>same-day movement</b></li>
-          <li>100% <b>skill-based</b> contest</li>
-        </ul>
-        <p><b>Prize:</b> ₹10,000<br><b>Entry:</b> Free</p>
-      </div>
+  <p>
+    Step 1️⃣ Pick <b>5 stocks</b> from 15<br>
+    Step 2️⃣ Rank your <b>Top 3 predictions</b><br>
+    Step 3️⃣ Earn points based on accuracy
+  </p>
 
-    </div>
+  <p><b>🎯 Points System:</b><br>
+    🥇 Gold → 20 pts<br>
+    🥈 Silver → 15 pts<br>
+    🥉 Bronze → 10 pts<br>
+    🔥 4th & 5th → 5 pts each
+  </p>
 
-    <!-- RIGHT : ACTION -->
-    <div>
+  <p><b>💯 Maximum Score:</b> 55 points</p>
 
-      <div class="card">
-        <h3>🎮 Choose a Challenge</h3>
+  <p><b>🏆 Rewards:</b><br>
+    55 pts → ₹15,000<br>
+    50 pts → ₹10,000<br>
+    45 pts → ₹5,000
+  </p>
 
-        <div class="play-box">
-          <a href="play.html?mode=weekly" class="play-btn play-weekly">
-            ▶ Play Weekly Challenge
-          </a>
+  <p><b>Entry:</b> Free • <b>100% Skill-Based</b></p>
 
-          <a href="play.html?mode=daily" class="play-btn play-daily">
-            ⚡ Play Daily Challenge
-          </a>
-        </div>
+  <p style="font-size:13px;">
+    📌 Result at <b>8:00 PM</b> friday<br>
+    📌 Next day challenge opens Next friday at <b>8:00 PM</b><br>
+    📌 Submissions close monday at <b>8:00 AM</b>
+  </p>
 
-        <div class="note">
-          You can play both challenges independently.
-        </div>
-      </div>
+  <p class="tc-link" onclick="openTC()">📄 Read T&amp;C</p>
 
-    </div>
+  <div class="play-box">
+    <a href="play.html?mode=weekly"
+       class="play-btn play-weekly">
+       ▶ Play Weekly Challenge
+    </a>
+    
 
   </div>
 </div>
+
+</div>
+
+<!-- RIGHT COLUMN -->
+
+<div>
+
+      <div class="card">
+  <h3>Daily Stock Prediction Game</h3>
+
+ <p>
+    Step 1️⃣ Pick <b>5 stocks</b> from 10<br>
+    Step 2️⃣ Rank your <b>Top 3 predictions</b><br>
+    Step 3️⃣ Earn points based on accuracy
+  </p>
+
+  <p><b>🎯 Points System:</b><br>
+    🥇 Gold → 20 pts<br>
+    🥈 Silver → 15 pts<br>
+    🥉 Bronze → 10 pts<br>
+    🔥 4th & 5th → 5 pts each
+  </p>
+
+  <p><b>💯 Maximum Score:</b> 55 points</p>
+
+  <p style="margin-top:10px;"><b>🏆 Rewards:</b><br>
+    55 pts → ₹1,500<br>
+    50 pts → ₹1,000<br>
+    45 pts → ₹500
+  </p>
+
+  <p><b>Entry:</b> Free · 100% Skill-Based</p>
+
+  <p style="font-size:13px;">
+    📌 Result at <b>8:00 PM</b> daily<br>
+    📌 Next day challenge opens at <b>8:00 PM</b><br>
+    📌 Submissions close next morning at <b>8:00 AM</b>
+  </p>
+
+ <p class="tc-link" onclick="openTC('daily')">📄 Read T&amp;C</p>
+
+<div class="play-box">
+  <a href="play.html?mode=daily"
+     class="play-btn play-daily">
+     ⚡ Play Daily Challenge
+  </a>
+</div>
+
+</div>
+
+</div>
+
+    </div>  
+
+  </div>
+
+  <div id="tcModal" class="tc-modal">
+  <div class="tc-content">
+    <span class="tc-close" onclick="closeTC()">×</span>
+
+    <h3>📄 Terms & Conditions</h3>
+
+    <p><b>⏰ Submission Window</b><br>
+      Weekly Challenge submissions open every <b>Friday at 8:00 PM (IST)</b> and remain valid until
+      <b>Monday at 8:00 AM (IST)</b>. Any submission made after this time will not be considered,
+      even if it is accepted due to a technical issue.
+    </p>
+
+    <p><b>⚠️ Late / Technical Submissions</b><br>
+      If a submission is recorded after Monday 8:00 AM (IST) due to any technical reason,
+      it will still be treated as <b>invalid</b>. EquitySkill’s system time will be the final authority.
+    </p>
+
+    <p><b>📧 Submission Confirmation</b><br>
+      A confirmation email will be sent after every valid submission.
+      This email is <b>mandatory proof</b> for prize claims.
+      No prize will be processed without the submission confirmation email.
+    </p>
+
+    <p><b>🔐 One Entry Rule</b><br>
+      Only <b>one submission per phone number and email ID</b> is allowed for each weekly challenge.
+      If multiple entries are detected, all related submissions may be disqualified.
+    </p>
+
+    <p><b>📊 Scoring & Results</b><br>
+      Points calculation is fully rule-based and automated.
+      EquitySkill’s scoring and results will be <b>final and binding</b>.
+    </p>
+
+    <p><b>🏆 Prize Distribution</b><br>
+      Prizes are distributed based on score categories:<br><br>
+
+      <b>55 points</b> → ₹15,000<br>
+      <b>50 points</b> → ₹10,000<br>
+      <b>45 points</b> → ₹5,000<br><br>
+
+      If multiple winners fall under the same score category,
+      the prize amount will be <b>equally divided</b> among all winners.<br><br>
+
+      <i>Example:</i><br>
+      55 points → 2 winners → ₹7,500 each<br>
+      45 points → 4 winners → ₹1,250 each
+    </p>
+
+    <p><b>⚖️ Fair Play Policy</b><br>
+      Any form of manipulation, automation, or unfair practice may result in
+      <b>permanent disqualification</b>. EquitySkill reserves the right to cancel any entry
+      without prior notice.
+    </p>
+
+    <p><b>🚫 No Investment Advice</b><br>
+      This contest is a <b>skill-based game</b>.
+      EquitySkill does not provide any investment advice or stock recommendations.
+    </p>
+
+    <p><b>🏛 Final Authority</b><br>
+      All decisions made by EquitySkill will be final.
+      Terms & Conditions may be updated in the future without prior notice.
+    </p>
+
+  </div>
+</div>
+
+
+</div>
+
+<script src="config.js"></script>
+<script>
+const API = CONFIG.WEEKLY_WEB_APP_URL;
+
+function msToTime(ms){
+  const h = Math.floor(ms / (1000*60*60));
+  const m = Math.floor((ms % (1000*60*60)) / (1000*60));
+  const s = Math.floor((ms % (1000*60)) / 1000);
+  return `${h}h ${m}m ${s}s`;
+}
+
+function openTC(){
+  document.getElementById("tcModal").style.display="block";
+}
+function closeTC(){
+  document.getElementById("tcModal").style.display="none";
+}
+
+function openTC(mode = 'weekly'){
+  const modal = document.getElementById("tcModal");
+  const content = modal.querySelector(".tc-content");
+
+  if(mode === "daily"){
+    content.innerHTML = `
+      <span class="tc-close" onclick="closeTC()">×</span>
+
+      <h3>📄 Daily Challenge – Terms & Conditions</h3>
+
+      <p><b>⏰ Submission Window</b><br>
+      Daily challenge submissions open at <b>8:00 PM (IST)</b> and close next morning at
+      <b>8:00 AM (IST)</b>. Any submission made after this time will be considered invalid.</p>
+
+      <p><b>📊 Results</b><br>
+      Results are declared daily at <b>8:00 PM (IST)</b>.</p>
+
+      <p><b>📧 Submission Confirmation</b><br>
+      A confirmation email is sent after every valid submission.
+      This email is mandatory proof for prize claims.</p>
+
+      <p><b>🔐 One Entry Rule</b><br>
+      Only <b>one submission per phone number and email ID per day</b> is allowed.
+      Multiple entries may result in disqualification.</p>
+
+      <p><b>📊 Scoring & Results</b><br>
+      Points calculation is fully automated.
+      EquitySkill’s scoring and results will be final and binding.</p>
+
+      <p><b>🏆 Prize Distribution</b><br>
+      <b>55 points</b> → ₹1,500<br>
+      <b>50 points</b> → ₹1,000<br>
+      <b>45 points</b> → ₹500<br><br>
+
+      If multiple users fall under the same score category,
+      the prize amount will be <b>equally divided</b>.</p>
+
+      <p><b>⚖️ Fair Play Policy</b><br>
+      Any manipulation, automation, or unfair practice may result in
+      permanent disqualification.</p>
+
+      <p><b>🚫 No Investment Advice</b><br>
+      This is a <b>skill-based game</b>.
+      EquitySkill does not provide investment advice or stock recommendations.</p>
+
+      <p><b>🏛 Final Authority</b><br>
+      EquitySkill’s decision will be final.
+      Terms & Conditions may change without prior notice.</p>
+    `;
+  }
+  else {
+    content.innerHTML = `
+      <span class="tc-close" onclick="closeTC()">×</span>
+
+      <h3>📄 Weekly Challenge – Terms & Conditions</h3>
+
+      <p><b>⏰ Submission Window</b><br>
+      Weekly challenge submissions open every <b>Friday at 8:00 PM (IST)</b>
+      and close on <b>Monday at 8:00 AM (IST)</b>.
+      Late submissions will not be considered.</p>
+
+      <p><b>⚠️ Late / Technical Submissions</b><br>
+      Submissions recorded after the closing time due to technical reasons
+      will still be treated as invalid.
+      EquitySkill’s system time is final.</p>
+
+      <p><b>📧 Submission Confirmation</b><br>
+      A confirmation email is mandatory proof for prize claims.</p>
+
+      <p><b>🔐 One Entry Rule</b><br>
+      Only <b>one submission per phone number and email ID per week</b> is allowed.
+      Multiple entries may lead to disqualification.</p>
+
+      <p><b>📊 Scoring & Results</b><br>
+      Scoring is fully automated and final.</p>
+
+      <p><b>🏆 Prize Distribution</b><br>
+      <b>55 points</b> → ₹15,000<br>
+      <b>50 points</b> → ₹10,000<br>
+      <b>45 points</b> → ₹5,000<br><br>
+
+      If multiple winners fall under the same score category,
+      the prize amount will be <b>equally divided</b>.<br><br>
+
+      <i>Example:</i><br>
+      55 pts → 2 winners → ₹7,500 each<br>
+      45 pts → 4 winners → ₹1,250 each
+      </p>
+
+      <p><b>⚖️ Fair Play Policy</b><br>
+      Any unfair practice may result in permanent disqualification.</p>
+
+      <p><b>🚫 No Investment Advice</b><br>
+      This contest is purely skill-based.</p>
+
+      <p><b>🏛 Final Authority</b><br>
+      EquitySkill’s decision will be final.
+      Terms may change without notice.</p>
+    `;
+  }
+
+  modal.style.display = "block";
+}
+
+function closeTC(){
+  document.getElementById("tcModal").style.display = "none";
+}
+</script>
 
 </body>
 </html>
