@@ -6,7 +6,7 @@ const CONFIG = {
 
   // ===== WEB APPS =====
   DAILY_WEB_APP_URL:
-    "https://script.google.com/macros/s/AKfycbz-Hkj_fyjG-kxo-phJnOQpGLRIGS636gBPX3lSC1A1tIq_Xu5SzCJ6ll9YURWWIIXs/exec",
+    "https://script.google.com/macros/s/AKfycbxHv-omOUXSUzNKBHy3jnZPs2w7_1pn9at-Pdbs5ev9P_TkkfwU2rP13jLTdOU9roJW/exec",
 
   WEEKLY_WEB_APP_URL:
     "https://script.google.com/macros/s/AKfycbx6FvC2mg66d5vXPvz7cpT0KXNKKejPN7bCUmRWZfJwbvGMzcuwD2OUtqSSfFk80SHr/exec",
