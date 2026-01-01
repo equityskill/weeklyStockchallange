@@ -210,6 +210,47 @@ body{
   text-decoration:underline;
 }
 
+.challenge-toggle{
+  width:100%;
+  padding:16px;
+  border:none;
+  border-radius:14px;
+  font-size:16px;
+  font-weight:800;
+  cursor:pointer;
+  color:#fff;
+  margin-bottom:10px;
+}
+
+.challenge-toggle.weekly{ background:#2563eb; }
+.challenge-toggle.daily{ background:#16a34a; }
+
+.challenge-content{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .45s ease, padding .3s ease;
+}
+
+.challenge-content.open{
+  padding-top:16px;
+}
+
+
+.challenge-content.open{
+  max-height:2000px;
+}
+
+@media (min-width: 900px){
+  .challenge-content{
+    max-height: none !important;
+    overflow: visible;
+  }
+
+  .challenge-toggle{
+    display:none; /* desktop par buttons hide */
+  }
+}
+
 
 </style>
 </head>
@@ -236,9 +277,20 @@ body{
   <div class="layout">
 
     <!-- LEFT : INFO -->
-    <div>
+  
 
+      
   <div class="card">
+
+    <!-- TOGGLE BUTTON -->
+  <button class="challenge-toggle weekly"
+    onclick="toggleCard('weeklyContent')">
+    Weekly Challenge
+  </button>
+
+  <!-- COLLAPSIBLE CONTENT -->
+  <div class="challenge-content" id="weeklyContent">
+
   <h3>Weekly Stock Prediction Game</h3>
 
   <p>
@@ -284,11 +336,18 @@ body{
 
 </div>
 
-<!-- RIGHT COLUMN -->
 
 <div>
 
       <div class="card">
+
+        <button class="challenge-toggle daily"
+    onclick="toggleCard('dailyContent')">
+    Daily Challenge
+  </button>
+
+  <div class="challenge-content" id="dailyContent">
+
   <h3>Daily Stock Prediction Game</h3>
 
  <p>
@@ -335,7 +394,7 @@ body{
 
     </div>  
 
-  </div>
+  
 
   <div id="tcModal" class="tc-modal">
   <div class="tc-content">
@@ -532,6 +591,18 @@ function openTC(mode = 'weekly'){
 function closeTC(){
   document.getElementById("tcModal").style.display = "none";
 }
+
+
+function toggleCard(id){
+  document.querySelectorAll('.challenge-content')
+    .forEach(c=>{
+      if(c.id !== id) c.classList.remove('open');
+    });
+
+  document.getElementById(id).classList.toggle('open');
+}
+
+
 </script>
 
 </body>
