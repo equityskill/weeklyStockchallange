@@ -197,8 +197,6 @@ const API = getAPI();
 
 
 
-const isEdit =
-  new URLSearchParams(window.location.search).get("edit") === "1";
 
 
 let STOCKS=[], selected=[];
@@ -210,45 +208,44 @@ let CURRENT_WEEK="";
 window.onload = () => {
   loadStocks();
   loadRanking();
-  applyContestStatus();      // ✅ ADD THIS
-
-  if (isEdit) {
-    preloadSubmission();
-  }
 };
 
 setInterval(applyContestStatus, 1000); // ⏱ live countdown
 
-
-
+ 
 /* LOAD STOCKS */
 function loadStocks(){
- fetch(API+"?action=init").then(r=>r.json()).then(d=>{
-  STOCKS=d.stocks||[];
-  if (MODE === "daily") {
-  CURRENT_WEEK = d.day || "";
-} else {
-  CURRENT_WEEK = d.week || "";
+  fetch(API+"?action=init")
+    .then(r=>r.json())
+    .then(d=>{
+      STOCKS = d.stocks || [];
+
+      CURRENT_WEEK = MODE === "daily" ? d.day : d.week;
+      localStorage.setItem("CURRENT_WEEK", CURRENT_WEEK);
+
+      renderStocks();
+      // ❌ NO already-submitted check here
+    });
 }
 
-localStorage.setItem("CURRENT_WEEK", CURRENT_WEEK);
 
-  renderStocks();
- });
-}
+
 
 function renderStocks(){
- stockList.innerHTML="";
- selected=[];
- count.innerText=0;
- STOCKS.forEach(s=>{
-  const d=document.createElement("div");
-  d.className="stock";
-  d.innerText=s;
-  d.onclick=()=>toggle(s,d);
-  stockList.appendChild(d);
- });
+  stockList.innerHTML = "";
+  selected = [];
+  count.innerText = 0;
+
+  STOCKS.forEach(s=>{
+    const d = document.createElement("div");
+    d.className = "stock";
+    d.innerText = s;
+    d.onclick = ()=>toggle(s,d);
+    stockList.appendChild(d);
+  });
 }
+
+
 
 function toggle(s,el){
  if(selected.includes(s)){
@@ -353,73 +350,7 @@ function renderRanks(){
  });
 }
 
-/* SUBMIT */
-function submitFinal(){
 
-  if(!ranking.gold || !ranking.silver || !ranking.bronze){
-    rankErr.innerText = "Please rank Gold, Silver & Bronze";
-    return;
-  }
-
- const user = JSON.parse(localStorage.getItem("user") || "{}");
-const mode = getGameMode();
-
-if(!user.username){
-  alert("Please login to continue");
-  location.href =
-  `login.html?mode=${mode}&redirect=${encodeURIComponent(location.href)}`;
-
-  return;
-}
-
-
-
-  const top3 = {
-    gold: ranking.gold,
-    silver: ranking.silver,
-    bronze: ranking.bronze
-  };
-
-  const params = new URLSearchParams({
-  action: "submitEntry",
-  username: user.username,
-  email: user.email || "",
-  phone: user.phone || "",
-  selected5: JSON.stringify(selected),
-  top3: JSON.stringify(top3)
-});
-
-// 🔑 MODE based key
-if (MODE === "daily") {
-  params.append("day", CURRENT_WEEK);   // daily backend expects "day"
-} else {
-  params.append("week", CURRENT_WEEK);  // weekly backend expects "week"
-}
-
-
- 
-  const btn = document.querySelector("#step2 button");
-  btn.disabled = true;
-  btn.innerText = "Submitting...";
-
-  fetch(API + "?" + params.toString())
-    .then(r => r.json())
-    .then(res => {
-      if(res.success){
-        alert("✅ Submission successful!");
-        location.href = "dashboard.html";
-      }else{
-        alert(res.message || "❌ Submission failed");
-        btn.disabled = false;
-        btn.innerText = "Submit Entry";
-      }
-    })
-    .catch(() => {
-      alert("⚠️ Network error");
-      btn.disabled = false;
-      btn.innerText = "Submit Entry";
-    });
-}
 
 
 /* RANKING */
@@ -428,24 +359,28 @@ function loadRanking(){
     .then(r => r.json())
     .then(d => {
 
-      // 🔑 Decide title properly
+      // 🔑 TITLE FIX
       if (d.mode === "LAST") {
-        // Previous completed week
+        // Previous completed contest
         rankingTitle.innerText =
-  MODE === "daily"
-    ? `Previous Day Ranking – ${d.week}`
-    : `Previous Week Ranking – ${d.week}`;
+          MODE === "daily"
+            ? `Previous Day Ranking – ${d.day || ""}`
+            : `Previous Week Ranking – ${d.week || ""}`;
 
       } else {
-        // Live week
-        const week = localStorage.getItem("CURRENT_WEEK") || d.week || "";
-        rankingTitle.innerText =
-  MODE === "daily"
-    ? `Daily Live Ranking – ${week}`
-    : `Weekly Live Ranking – ${week}`;
+        // Live contest
+        const label =
+          MODE === "daily"
+            ? (d.day || localStorage.getItem("CURRENT_WEEK") || "")
+            : (d.week || localStorage.getItem("CURRENT_WEEK") || "");
 
+        rankingTitle.innerText =
+          MODE === "daily"
+            ? `Daily Live Ranking – ${label}`
+            : `Weekly Live Ranking – ${label}`;
       }
 
+      // 🔄 RENDER TABLE
       liveRanking.innerHTML = "";
 
       (d.ranking || []).forEach((r, i) => {
@@ -467,35 +402,6 @@ function loadRanking(){
 }
 
 
-function preloadSubmission(){
-
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
-  const week = localStorage.getItem("CURRENT_WEEK");
-
-  if(!user.username || !week) return;
-
-  fetch(`${API}?action=mySubmission&username=${encodeURIComponent(user.username)}&week=${week}`)
-    .then(r => r.json())
-    .then(d => {
-
-      if(d.status !== "FOUND") return;
-
-      // preselect stocks
-      selected = d.selected5 || [];
-      ranking = d.top3 || { gold:null, silver:null, bronze:null };
-
-      // update UI
-      document.querySelectorAll(".stock").forEach(el => {
-        if(selected.includes(el.innerText)){
-          el.classList.add("selected");
-        }
-      });
-
-      count.innerText = selected.length;
-    });
-}
-
-
 
 const STATUS_API = API;
 
@@ -508,6 +414,7 @@ function msToTime(ms){
 }
 
 function applyContestStatus(){
+  
   fetch(`${API}?action=contestStatus`)
     .then(r => r.json())
     .then(d => {
@@ -524,7 +431,10 @@ function applyContestStatus(){
       const title = document.getElementById("selectionTitle");
       const info  = document.getElementById("submissionInfo");
 
-      const week = d.current_week || "";
+      const week =
+  MODE === "daily"
+    ? d.current_day
+    : d.current_week || "";
 
       if(d.status === "OPEN"){
         step1.style.display = "block";
@@ -555,9 +465,107 @@ closedTitle.innerText =
 
 }
 
+function shortDate(d){
+  const dt = new Date(d);
+  const dd = String(dt.getDate()).padStart(2,"0");
+  const mm = String(dt.getMonth()+1).padStart(2,"0");
+  const yy = String(dt.getFullYear()).slice(-2);
+  return `${dd}-${mm}-${yy}`;
+}
 
-applyContestStatus();
-setInterval(applyContestStatus, 1000);
+
+
+
+ //  function checkAlreadySubmitted() {
+ // const user = JSON.parse(localStorage.getItem("user") || "{}");
+ // if (!user.username || !CURRENT_WEEK) return;
+
+  // Use correct parameter based on mode
+ // const param = MODE === "daily" ? "day" : "week";
+ // const url = `${API}?action=mySubmission&username=${encodeURIComponent(user.username)}&${param}=${CURRENT_WEEK}`;
+  
+ // fetch(url)
+ //   .then(r => r.json())
+ //   .then(d => {
+ //     if (d.status === "FOUND") {
+ //       alert("You have already submitted for " + (MODE === "daily" ? "today" : "this week") + ".");
+ //       location.href = `my-submission.html?mode=${MODE}`;
+ //     }
+ //   });
+//}
+function submitFinal(){
+
+  if(!ranking.gold || !ranking.silver || !ranking.bronze){
+    rankErr.innerText = "Please rank Gold, Silver & Bronze";
+    return;
+  }
+
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  if(!user.username){
+    location.href = "login.html";
+    return;
+  }
+
+  const top3 = {
+    gold: ranking.gold,
+    silver: ranking.silver,
+    bronze: ranking.bronze
+  };
+
+  const params = new URLSearchParams({
+    action: "submitEntry",
+    username: user.username,
+    email: user.email || "",
+    phone: user.phone || "",
+    selected5: JSON.stringify(selected),
+    top3: JSON.stringify(top3)
+  });
+
+  if (MODE === "daily") {
+    params.append("day", CURRENT_WEEK);
+  } else {
+    params.append("week", CURRENT_WEEK);
+  }
+
+  const btn = document.querySelector("#step2 button");
+  btn.disabled = true;
+  btn.innerText = "Submitting...";
+
+  fetch(API + "?" + params.toString())
+    .then(r => r.json())
+    .then(res => {
+
+      btn.disabled = false;
+      btn.innerText = "Submit Entry";
+
+      if (res.success) {
+        alert("✅ Submission successful!");
+        location.href = "dashboard.html";
+        return;
+      }
+
+      if (
+        res.message === "Already submitted today" ||
+        res.message === "Already submitted this week"
+      ) {
+        alert(
+          MODE === "daily"
+            ? "You have already submitted for today."
+            : "You have already submitted for this week."
+        );
+        location.href = `my-submission.html?mode=${MODE}`;
+        return;
+      }
+
+      alert(res.message || "❌ Submission failed");
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.innerText = "Submit Entry";
+      alert("⚠️ Network error");
+    });
+}
+
 </script>
 
 </body>

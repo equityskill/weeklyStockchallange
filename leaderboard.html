@@ -153,7 +153,7 @@ body{
 
   <!-- LEADERBOARD -->
   <div class="card">
-    <select id="periodSelect" onchange="loadLeaderboard()"></select>
+    <select id="periodSelect" onchange="onPeriodChange()"></select>
 
     <table class="table">
       <thead>
@@ -176,9 +176,11 @@ if(!user){ location.href="login.html"; }
 let MODE = "weekly";
 let API = CONFIG.WEEKLY_WEB_APP_URL;
 
+
+
 function switchMode(mode, btn){
+
   MODE = mode;
-  API = mode==="weekly" ? CONFIG.WEEKLY_WEB_APP_URL : CONFIG.DAILY_WEB_APP_URL;
 
   document.querySelectorAll(".tab").forEach(b=>b.classList.remove("active"));
   btn.classList.add("active");
@@ -186,62 +188,137 @@ function switchMode(mode, btn){
   document.getElementById("pageTitle").innerText =
     mode==="weekly" ? "🏆 Weekly Leaderboard" : "⚡ Daily Leaderboard";
 
-  loadPeriods();
+  // 🔥 IMPORTANT: clear old dropdown
+  document.getElementById("periodSelect").innerHTML = "";
+
+  if(mode === "weekly"){
+    loadWeeklyPeriods();
+  } else {
+    loadDailyPeriods();
+  }
 }
 
-function loadPeriods(){
-  fetch(`${API}?action=previousResults`)
+
+function loadWeeklyPeriods(){
+
+  fetch(`${CONFIG.WEEKLY_WEB_APP_URL}?action=previousResults`)
     .then(r=>r.json())
     .then(d=>{
-      const sel=document.getElementById("periodSelect");
-      sel.innerHTML="";
+
+      const sel = document.getElementById("periodSelect");
+      sel.innerHTML = "";
+
       d.results.forEach(r=>{
-        sel.innerHTML+=`<option>${r.week}</option>`;
+        const opt = document.createElement("option");
+        opt.value = r.week;
+        opt.textContent = r.week;
+        sel.appendChild(opt);
       });
-      loadLeaderboard();
+
+      if(d.results.length){
+        loadWeeklyLeaderboard(d.results[0].week);
+      }
     });
 }
+function loadDailyPeriods(){
 
-function loadLeaderboard(){
-  const period=document.getElementById("periodSelect").value;
-  fetch(`${API}?action=${MODE}Leaderboard&period=${period}`)
+  fetch(`${CONFIG.DAILY_WEB_APP_URL}?action=dailyResultDays`)
     .then(r=>r.json())
     .then(d=>{
-      const body=document.getElementById("leaderboardBody");
-      body.innerHTML="";
-      let myRank="—", myScore="—";
 
-      d.leaderboard.forEach((u,i)=>{
-        const isMe=u.username===user.username;
-        if(isMe){ myRank=`#${i+1}`; myScore=u.score; }
+      const sel = document.getElementById("periodSelect");
+      sel.innerHTML = "";
 
-        body.innerHTML += `
-<tr class="row ${isMe?"me":""}"
-    onclick="openProfile('${u.username}')">
-
-  <td class="rank">${i+1}</td>
-  <td>
-    <b>@${u.username}</b>
-    ${isMe?'<span class="you-badge">YOU</span>':''}
-  </td>
-  <td>${u.score}</td>
-</tr>`;
-
+      d.days.forEach(day=>{
+        const opt = document.createElement("option");
+        opt.value = day;
+        opt.textContent = day; // YYYY-MM-DD
+        sel.appendChild(opt);
       });
 
-      myRankEl.innerText=myRank;
-      myScoreEl.innerText=myScore;
+      if(d.days.length){
+        loadDailyLeaderboard(d.days[0]);
+      }
     });
 }
 
-const myRankEl=document.getElementById("myRank");
-const myScoreEl=document.getElementById("myScore");
+function loadWeeklyLeaderboard(){
 
-window.onload=()=>loadPeriods();
+  const week = document.getElementById("periodSelect").value;
 
-function openProfile(username){
-  location.href = `profile.html?mode=${MODE}&user=${username}`;
+  fetch(`${CONFIG.WEEKLY_WEB_APP_URL}?action=weeklyLeaderboard&period=${week}`)
+    .then(r=>r.json())
+    .then(d=>{
+      renderLeaderboard(d.leaderboard);
+    });
 }
+function loadDailyLeaderboard(){
+
+  const day = document.getElementById("periodSelect").value;
+
+  fetch(`${CONFIG.DAILY_WEB_APP_URL}?action=dailyLeaderboard&day=${day}`)
+    .then(r=>r.json())
+    .then(d=>{
+      renderLeaderboard(d.leaderboard);
+
+    });
+}
+
+function onPeriodChange(){
+  if(MODE === "weekly"){
+    loadWeeklyLeaderboard();
+  } else {
+    loadDailyLeaderboard();
+  }
+}
+
+const myRankEl = document.getElementById("myRank");
+const myScoreEl = document.getElementById("myScore");
+
+function renderLeaderboard(list){
+
+  const body = document.getElementById("leaderboardBody");
+  body.innerHTML = "";
+
+  let myRank = "—";
+  let myScore = "—";
+
+  list.forEach((u, i) => {
+
+    const username = u.username || u.user; // weekly / daily compatibility
+    const score = u.score;
+
+    const isMe = username === user.username;
+    if(isMe){
+      myRank = `#${i+1}`;
+      myScore = score;
+    }
+
+    body.innerHTML += `
+      <tr class="row ${isMe ? "me" : ""}">
+        <td class="rank">${i+1}</td>
+        <td>
+          <b>@${username}</b>
+          ${isMe ? '<span class="you-badge">YOU</span>' : ''}
+        </td>
+        <td>${score}</td>
+      </tr>
+    `;
+  });
+
+  document.getElementById("myRank").innerText = myRank;
+  document.getElementById("myScore").innerText = myScore;
+}
+
+
+window.onload = () => {
+  // default mode = weekly
+  loadWeeklyPeriods();
+};
+
+window.onload = () => {
+  switchMode("weekly", document.querySelector(".tab.active"));
+};
 
 </script>
 

@@ -429,11 +429,10 @@ if(!user){
 }
 
 // ===== MODE & API =====
-
-const WEEKLY_API = "https://script.google.com/macros/s/AKfycbx6FvC2mg66d5vXPvz7cpT0KXNKKejPN7bCUmRWZfJwbvGMzcuwD2OUtqSSfFk80SHr/exec";
-const DAILY_API  = "https://script.google.com/macros/s/AKfycbxHv-omOUXSUzNKBHy3jnZPs2w7_1pn9at-Pdbs5ev9P_TkkfwU2rP13jLTdOU9roJW/exec"; 
-
-const USER_API = "https://script.google.com/macros/s/AKfycbxTYoXjKLVaI4PTNZQMGQR_uZ9k9gGIlgRCNIqotskg0dKwpWOlt_OaIr34ue-HLUrW/exec"
+// Use URLs from config.js (no need to update manually)
+const WEEKLY_API = CONFIG.WEEKLY_WEB_APP_URL;
+const DAILY_API  = CONFIG.DAILY_WEB_APP_URL;
+const USER_API   = CONFIG.USER_WEB_APP_URL;
 
 // ===== UI TEXT =====
 document.getElementById("welcome").innerText =
@@ -476,46 +475,33 @@ function closeEditProfile(){
 
 function saveProfile(){
 
-  const email = document.getElementById("editEmail").value.trim();
-  const phone = document.getElementById("editPhone").value.trim();
+  const user = JSON.parse(localStorage.getItem("user"));
 
-  if(!phone){
-    alert("Phone number is required");
-    return;
-  }
-  if(!/^\d{10}$/.test(phone)){
-  alert("Phone number must be exactly 10 digits");
-  return;
+  const email = document.getElementById("editEmail").value;
+  const phone = document.getElementById("editPhone").value;
+
+  fetch(USER_API +
+    "?action=updateUserProfile" +
+    "&username=" + encodeURIComponent(user.username) +
+    "&email=" + encodeURIComponent(email) +
+    "&phone=" + encodeURIComponent(phone)
+  )
+  .then(r => r.json())
+  .then(data => {
+    if(!data.success){
+      alert(data.message || "Update failed");
+      return;
+    }
+
+    alert("Profile updated successfully ✅");
+
+    // optional: localStorage update
+    user.email = email;
+    user.phone = phone;
+    localStorage.setItem("user", JSON.stringify(user));
+  });
 }
 
-  const url =
-  `${USER_API}?action=updateUserProfile` +
-
-    `&username=${encodeURIComponent(user.username)}` +
-    `&email=${encodeURIComponent(email)}` +
-    `&phone=${encodeURIComponent(phone)}`;
-
-  fetch(url)
-    .then(r=>r.json())
-    .then(d=>{
-      if(!d.success){
-        alert(d.message || "Update failed");
-        return;
-      }
-
-      // update local storage
-      user.email = email;
-      user.phone = phone;
-      localStorage.setItem("user", JSON.stringify(user));
-
-      // update UI
-      document.getElementById("profileEmail").innerText = email || "—";
-      document.getElementById("profilePhone").innerText = phone;
-
-      closeEditProfile();
-      alert("Profile updated successfully");
-    });
-}
 
 function loadStats(mode, btn){
 

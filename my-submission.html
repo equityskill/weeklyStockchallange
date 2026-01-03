@@ -203,8 +203,10 @@ function loadWeeks(){
       }
 
       d.weeks.forEach(w=>{
-        sel.innerHTML += `<option value="${w}">${w}</option>`;
-      });
+  const safe = String(w);   // 🔒 force string
+  sel.innerHTML += `<option value="${safe}">${safe}</option>`;
+});
+
 
       loadSubmission();
     });
@@ -250,15 +252,16 @@ function loadSubmission(){
 }
 
 function editSubmission(){
-  location.href = `play.html?mode=${MODE}&edit=1`;
+  const day = document.getElementById("weekSelect").value;
+  location.href = `play.html?mode=daily&edit=1&day=${day}`;
 }
+
 
 function clearData(){
   document.getElementById("weekText").innerText = "";
   document.getElementById("stockList").innerHTML = `<li>No data</li>`;
   document.getElementById("rankText").innerText = "—";
-  document.getElementById("editCard").style.display = "none";
-}
+  }
 </script>
 
 </body>
