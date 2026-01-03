@@ -178,12 +178,12 @@ select{
   <p id="weekText">Loading…</p>
   <div id="winnerBox"></div>
 </div>
-
+<!----
 <div class="card">
   <h3 id="topTitle"></h3>
   <ul class="list" id="topList"></ul>
 </div>
-
+-->
 <!-- PREVIOUS -->
 <div class="card">
   <h3>📅 View Previous Results</h3>
@@ -227,9 +227,7 @@ function switchMode(mode, btn){
   document.getElementById("resultTitle").innerText =
     mode === "daily" ? "📊 Daily Challenge Results" : "📊 Weekly Challenge Results";
 
-  document.getElementById("topTitle").innerText =
-    mode === "daily" ? "🔥 Top 5 Gainers (Today)" : "🔥 Top 5 Gainer Stocks";
-
+  
   loadCurrentResult();
   loadPreviousPeriods();
 }
@@ -248,8 +246,6 @@ document.getElementById("pageTagline").innerText =
 document.getElementById("resultTitle").innerText =
   MODE === "daily" ? "📊 Daily Challenge Results" : "📊 Weekly Challenge Results";
 
-document.getElementById("topTitle").innerText =
-  MODE === "daily" ? "🔥 Top 5 Gainers (Today)" : "🔥 Top 5 Gainer Stocks";
 
 /* ===== INIT ===== */
 window.onload = () => {
@@ -279,26 +275,8 @@ function loadCurrentResult(){
           `<span class="badge win">🏆 Winners (${d.winnerCount}): ${d.winners.join(", ")}</span>`;
       }
 
-      topList.innerHTML = "";
-      if(!d.top5 || d.top5.length === 0){
-        topList.innerHTML = `<li>No stock data</li>`;
-        return;
-      }
-
-      d.top5.forEach((s,i)=>{
-        const stock = typeof s === "string" ? s : s.stock;
-        const pct = s.pct !== undefined ? ` (${s.pct}%)` : "";
-        const badge =
-          i===0?"🥇 Gold":
-          i===1?"🥈 Silver":
-          i===2?"🥉 Bronze":"🔥 Top 5";
-
-        topList.innerHTML += `
-          <li>
-            <span><b>#${i+1}</b> ${stock}${pct}</span>
-            <span>${badge}</span>
-          </li>`;
-      });
+      
+      
     });
 }
 
