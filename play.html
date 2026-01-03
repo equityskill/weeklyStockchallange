@@ -440,10 +440,11 @@ function applyContestStatus(){
         step1.style.display = "block";
         closed.style.display = "none";
 
-        title.innerText =
+  title.innerText =
   MODE === "daily"
-    ? `Select 5 Stocks (Today)`
+    ? `Select 5 Stocks (${prettyDate(d.current_day)})`
     : `Select 5 Stocks (${week})`;
+
         info.innerText =
           `⏳ Submission closes in ${msToTime(d.remainingMs)}`;
 
@@ -565,6 +566,11 @@ function submitFinal(){
       alert("⚠️ Network error");
     });
 }
+
+function prettyDate(d){
+  return new Date(d).toDateString(); 
+}
+
 
 </script>
 
