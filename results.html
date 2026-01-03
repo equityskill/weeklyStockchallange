@@ -172,12 +172,14 @@ select{
   </div>
 </div>
 
-<!-- CURRENT RESULT -->
+<!-- CURRENT RESULT 
 <div class="card">
   <h2 id="resultTitle"></h2>
   <p id="weekText">Loading…</p>
   <div id="winnerBox"></div>
-</div>
+</div> -->
+
+
 <!----
 <div class="card">
   <h3 id="topTitle"></h3>
@@ -224,12 +226,7 @@ function switchMode(mode, btn){
   document.getElementById("pageTagline").innerText =
     mode === "daily" ? "Daily Results" : "Weekly Results";
 
-  document.getElementById("resultTitle").innerText =
-    mode === "daily" ? "📊 Daily Challenge Results" : "📊 Weekly Challenge Results";
-
-  
-  loadCurrentResult();
-  loadPreviousPeriods();
+   loadPreviousPeriods();
 }
 
 
@@ -243,14 +240,9 @@ if(!user){
 document.getElementById("pageTagline").innerText =
   MODE === "daily" ? "Daily Results" : "Weekly Results";
 
-document.getElementById("resultTitle").innerText =
-  MODE === "daily" ? "📊 Daily Challenge Results" : "📊 Weekly Challenge Results";
-
-
 /* ===== INIT ===== */
 window.onload = () => {
-  loadCurrentResult();
-  loadPreviousPeriods();
+    loadPreviousPeriods();
 };
 
 /* ===== CURRENT RESULT ===== */
@@ -286,22 +278,25 @@ function loadPreviousPeriods(){
     .then(r=>r.json())
     .then(d=>{
       periodSelect.innerHTML="";
-      if(!d.results || d.results.length===0){
-        periodSelect.innerHTML=`<option>No data</option>`;
+
+      const list = MODE === "daily"
+        ? (d.days || [])
+        : (d.results || []).map(r=>r.week);
+
+      if(!list.length){
+        periodSelect.innerHTML = `<option>No data</option>`;
         return;
       }
 
-      // latest first
-      d.results
-        .sort((a,b)=> b.week.localeCompare(a.week))
-        .forEach(r=>{
-          const o=document.createElement("option");
-          o.value=r.week;
-          o.innerText=r.week;
-          periodSelect.appendChild(o);
-        });
+      list.forEach(v=>{
+  const o = document.createElement("option");
+  o.value = v;                  // ❗ original value (important)
+  o.innerText = formatDisplayDate(v); // 👈 fancy display
+  periodSelect.appendChild(o);
+});
 
-      loadSelectedPeriod(); // auto load latest
+
+      loadSelectedPeriod();
     });
 }
 
@@ -310,22 +305,22 @@ function loadSelectedPeriod(){
   const val = periodSelect.value;
   if(!val) return;
 
-  fetch(API + "?action=weeklyResult&week=" + encodeURIComponent(val))
+  const url = MODE === "daily"
+    ? `${API}?action=dailyResult&day=${encodeURIComponent(val)}`
+    : `${API}?action=weeklyResult&week=${encodeURIComponent(val)}`;
+
+  fetch(url)
     .then(r=>r.json())
     .then(d=>{
+      stockTable.innerHTML="";
 
-      stockTable.innerHTML = "";
-
-      if(!d.ranking || d.ranking.length === 0){
+      if(!d.ranking || !d.ranking.length){
         stockTable.innerHTML =
           `<tr><td colspan="3">No data</td></tr>`;
         return;
       }
 
       d.ranking.slice(0,15).forEach((s,i)=>{
-        const stock = s.stock;
-        const pct = ` (${s.pct}%)`;
-
         const badge =
           i===0?"🥇 Gold":
           i===1?"🥈 Silver":
@@ -335,11 +330,23 @@ function loadSelectedPeriod(){
         stockTable.innerHTML += `
           <tr>
             <td>${i+1}</td>
-            <td>${stock}${pct}</td>
+            <td>${s.stock} (${s.pct}%)</td>
             <td>${badge}</td>
           </tr>`;
       });
     });
+}
+
+function formatDisplayDate(val){
+  const d = new Date(val);
+  if (isNaN(d)) return val;
+
+  return d.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    weekday: "short"
+  });
 }
 
 </script>

@@ -198,6 +198,22 @@ function switchMode(mode, btn){
   }
 }
 
+function formatPrettyDate(val){
+  try{
+    const d = new Date(val);
+    if (isNaN(d)) return val;
+
+    return d.toLocaleDateString("en-IN", {
+      weekday: "short",
+      day: "2-digit",
+      month: "short",
+      year: "numeric"
+    });
+  }catch(e){
+    return val;
+  }
+}
+
 
 function loadWeeklyPeriods(){
 
@@ -231,8 +247,8 @@ function loadDailyPeriods(){
 
       d.days.forEach(day=>{
         const opt = document.createElement("option");
-        opt.value = day;
-        opt.textContent = day; // YYYY-MM-DD
+        opt.value = day;                      // backend safe
+        opt.textContent = formatPrettyDate(day); // 👈 pretty
         sel.appendChild(opt);
       });
 
@@ -283,22 +299,37 @@ function renderLeaderboard(list){
   let myRank = "—";
   let myScore = "—";
 
-  list.forEach((u, i) => {
+  let lastScore = null;
+  let rank = 0;
 
-    const username = u.username || u.user; // weekly / daily compatibility
+  list.forEach((u, index) => {
+
+    const username = u.username || u.user; // weekly / daily
     const score = u.score;
+
+    // 🔥 DENSE RANKING LOGIC
+    if (score !== lastScore) {
+      rank = index + 1;
+      lastScore = score;
+    }
 
     const isMe = username === user.username;
     if(isMe){
-      myRank = `#${i+1}`;
+      myRank = `#${rank}`;
       myScore = score;
     }
 
+    // 🥇🥈🥉 medals (optional polish)
+    let medal = "";
+    if(rank === 1) medal = "🥇";
+    else if(rank === 2) medal = "🥈";
+    else if(rank === 3) medal = "🥉";
+
     body.innerHTML += `
       <tr class="row ${isMe ? "me" : ""}">
-        <td class="rank">${i+1}</td>
+        <td class="rank">${rank}</td>
         <td>
-          <b>@${username}</b>
+          <b>${medal} @${username}</b>
           ${isMe ? '<span class="you-badge">YOU</span>' : ''}
         </td>
         <td>${score}</td>
@@ -306,9 +337,10 @@ function renderLeaderboard(list){
     `;
   });
 
-  document.getElementById("myRank").innerText = myRank;
-  document.getElementById("myScore").innerText = myScore;
+  myRankEl.innerText = myRank;
+  myScoreEl.innerText = myScore;
 }
+
 
 
 window.onload = () => {
